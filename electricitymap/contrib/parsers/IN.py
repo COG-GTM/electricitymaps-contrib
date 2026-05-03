@@ -241,6 +241,7 @@ def fetch_npp_production(
         )
 
 
+@refetch_frequency(timedelta(days=1))
 def fetch_consumption(
     zone_key: ZoneKey,
     session: Session = Session(),
@@ -269,7 +270,6 @@ def fetch_consumption(
     ).to_list()
 
 
-@refetch_frequency(timedelta(days=1))
 def fetch_consumption_grid_india(
     zone_key: ZoneKey,
     session: Session = Session(),
