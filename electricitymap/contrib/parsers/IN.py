@@ -21,9 +21,6 @@ from electricitymap.contrib.parsers.lib.config import refetch_frequency
 from electricitymap.contrib.parsers.lib.exceptions import ParserException
 from electricitymap.contrib.types import ZoneKey
 
-# TODO 1 Migrate the IN_WE and IN_EA consumption fetching to this parser, using the grid india data.
-# TODO 2 Migrate the fetch_consumption in this file so that it uses the grid india data instead of meritindia.in.
-
 # This parsers does not work locally with all VPN. It does not work with SurfShark, but it works with NordVPN. Local proxies could also be used.
 IN_TZ = ZoneInfo("Asia/Kolkata")
 START_DATE_RENEWABLE_DATA = datetime(2020, 12, 17, tzinfo=IN_TZ)
@@ -250,12 +247,148 @@ def fetch_consumption(
     target_datetime: datetime | None = None,
     logger: Logger = getLogger(__name__),
 ) -> list[dict[str, Any]]:
+    """Fetches consumption data for an Indian zone.
+
+    Uses the Grid India daily PSP report (Energy Met column) for All India and
+    the regional zones (IN, IN-NO, IN-EA, IN-WE, IN-SO, IN-NE) and falls back
+    to the live meritindia.in feed for any other zone.
+    """
+    session = session or Session()
+    if zone_key in GRID_INDIA_REGION_MAPPING:
+        return fetch_consumption_grid_india(
+            zone_key=zone_key,
+            session=session,
+            target_datetime=target_datetime,
+            logger=logger,
+        )
     return fetch_consumption_from_meritindia(
         zone_key=zone_key,
         session=session,
         target_datetime=target_datetime,
         logger=logger,
     ).to_list()
+
+
+@refetch_frequency(timedelta(days=1))
+def fetch_consumption_grid_india(
+    zone_key: ZoneKey,
+    session: Session = Session(),
+    target_datetime: datetime | None = None,
+    logger: Logger = getLogger(__name__),
+) -> list[dict[str, Any]]:
+    """Fetches the daily Grid India PSP report and extracts the 'Energy Met' value
+    for the requested zone, broadcasting the daily total evenly across the 24
+    hours of the report date as average MW values.
+    """
+    if target_datetime is None:
+        _target_datetime = datetime.now(tz=IN_TZ)
+    elif target_datetime.tzinfo is None:
+        _target_datetime = target_datetime.replace(tzinfo=IN_TZ)
+    else:
+        _target_datetime = target_datetime.astimezone(IN_TZ)
+
+    report_date, report_content = fetch_grid_india_report(
+        target_datetime=_target_datetime, session=session
+    )
+    if report_content is None:
+        raise ParserException(
+            parser="IN.py",
+            message=f"{target_datetime}: {zone_key} consumption data is not available",
+            zone_key=zone_key,
+        )
+    return parse_consumption_grid_india_report(
+        content=report_content,
+        zone_key=zone_key,
+        target_datetime=report_date,
+        logger=logger,
+    )
+
+
+def get_energy_met_grid_india_report(content: bytes, zone_key: str) -> float:
+    """Extracts 'Energy Met (MU)' for the given zone from the Grid India daily
+    report's 'A. Power Supply Position at All India and Regional level' table.
+    Returns the daily energy consumption value in MU (1 MU = 1 GWh).
+    """
+    df = pd.read_excel(content, engine="xlrd", header=2, sheet_name="MOP_E")
+
+    START_PATTERN = "A. Power Supply Position"
+    END_PATTERN = "B. Frequency Profile"
+    description_column = df.columns[0]
+
+    start_mask = (
+        df[description_column]
+        .astype(str)
+        .str.contains(START_PATTERN, na=False, case=False)
+    )
+    end_mask = (
+        df[description_column]
+        .astype(str)
+        .str.contains(END_PATTERN, na=False, case=False)
+    )
+    start_index = start_mask[start_mask].first_valid_index()
+    end_index = end_mask[end_mask].first_valid_index()
+
+    if start_index is None or end_index is None:
+        raise ParserException(
+            parser="IN.py",
+            message="Could not find the Power Supply Position table in the daily report; the format may have changed.",
+        )
+    section_df = df.iloc[start_index + 1 : end_index].copy()
+
+    # The first row in the section contains the region column headers.
+    section_df.columns = section_df.iloc[0]
+    section_df = section_df.iloc[1:].reset_index(drop=True)
+
+    description_col = section_df.iloc[:, 0]
+    energy_met_mask = description_col.astype(str).str.contains(
+        "Energy Met", na=False, case=False
+    )
+    matching_indices = description_col[energy_met_mask].index
+    if len(matching_indices) == 0:
+        raise ParserException(
+            parser="IN.py",
+            message="Could not find the 'Energy Met' row in the Power Supply Position table.",
+        )
+    energy_met_row_index = matching_indices[0]
+
+    region_column = GRID_INDIA_REGION_MAPPING[zone_key]
+    raw_value = section_df.loc[energy_met_row_index, region_column]
+    energy_met_mu = pd.to_numeric(str(raw_value).replace("-", "0"), errors="coerce")
+    if pd.isna(energy_met_mu):
+        raise ParserException(
+            parser="IN.py",
+            message=f"Could not parse 'Energy Met' value for {zone_key} (raw value: {raw_value!r}).",
+        )
+    return float(energy_met_mu)
+
+
+def parse_consumption_grid_india_report(
+    content: bytes,
+    zone_key: str,
+    target_datetime: datetime,
+    logger: Logger = getLogger(__name__),
+) -> list[dict[str, Any]]:
+    """Parses the daily Grid India PSP report and returns 24 hourly consumption
+    points for the given zone, derived from the 'Energy Met (MU)' value.
+    """
+    energy_met_mu = get_energy_met_grid_india_report(content=content, zone_key=zone_key)
+    # 1 MU = 1 GWh; spread evenly across 24 hours gives the average MW for each
+    # hour. CONVERSION_DAILY_GWH_TO_HOURLY_MW = 24/1000, so daily_MU / 0.024 = MW.
+    average_hourly_mw = energy_met_mu / CONVERSION_DAILY_GWH_TO_HOURLY_MW
+
+    start_of_day = target_datetime.astimezone(IN_TZ).replace(
+        hour=0, minute=0, second=0, microsecond=0
+    )
+
+    consumption_list = TotalConsumptionList(logger)
+    for hour_offset in range(24):
+        consumption_list.append(
+            zoneKey=ZoneKey(zone_key),
+            datetime=start_of_day + timedelta(hours=hour_offset),
+            consumption=average_hourly_mw,
+            source=GRID_INDIA_SOURCE,
+        )
+    return consumption_list.to_list()
 
 
 def format_ren_production_data(
