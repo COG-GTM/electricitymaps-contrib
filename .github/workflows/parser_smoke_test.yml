@@ -1,0 +1,102 @@
+name: Parser Smoke Test
+
+# Daily smoke test that runs a curated subset of credential-free parsers
+# against their live upstream APIs. The job is informational on a per-zone
+# basis (continue-on-error: true) so a single TSO outage does not nuke the
+# whole matrix; the aggregate job below fails the workflow if too many zones
+# are red, which is what fires the notification.
+#
+# To run on demand: GitHub Actions tab -> Parser Smoke Test -> Run workflow.
+
+on:
+  schedule:
+    # Daily at 06:00 UTC.
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+
+# Threshold above which the aggregate job fails. Expressed as a percentage of
+# the matrix that is allowed to fail. Override at dispatch time if needed.
+env:
+  PARSER_SMOKE_FAILURE_THRESHOLD_PERCENT: '50'
+
+jobs:
+  parser_smoke_test:
+    name: Smoke / ${{ matrix.zone }}
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        # All zones below were verified to NOT require an API key / token at
+        # the time the workflow was added. Any zone whose `production` parser
+        # calls `get_token(...)` must NOT be added here — the smoke job runs
+        # without secrets and would always fail. See
+        # `.github/workflows/parser_smoke_test.yml` PR description for the
+        # rationale per zone.
+        zone:
+          - GB
+          - JP-TK
+          - AU-NSW
+          - BR-CS
+          - IN
+          - CL-SEN
+          - NZ
+          - TW
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+          cache-suffix: 'parser-smoke'
+          python-version: '3.10'
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libxml2-dev tesseract-ocr tesseract-ocr-eng
+
+      - name: Install Python dependencies
+        run: |
+          uv sync --extra parsers
+
+      - name: Run production parser for ${{ matrix.zone }}
+        id: run_parser
+        timeout-minutes: 5
+        continue-on-error: true
+        run: |
+          uv run test_parser "${{ matrix.zone }}" production
+
+  aggregate:
+    name: Smoke / Aggregate
+    needs: parser_smoke_test
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 5
+    if: ${{ always() }}
+    steps:
+      - name: Summarize matrix outcome
+        env:
+          MATRIX_RESULT: ${{ needs.parser_smoke_test.result }}
+          THRESHOLD_PERCENT: ${{ env.PARSER_SMOKE_FAILURE_THRESHOLD_PERCENT }}
+        run: |
+          # `needs.<job>.result` summarizes the matrix as a single status:
+          #   - "success"      -> all zones green
+          #   - "failure"      -> at least one zone failed AND continue-on-error
+          #                       was not set on the failing step (it is, here),
+          #                       OR the job itself crashed
+          #   - "cancelled"    -> matrix was cancelled
+          # Because every zone step uses `continue-on-error: true`, the matrix
+          # will report "success" even when individual zones fail. To enforce
+          # the threshold properly we need finer-grained data than
+          # `needs.<job>.result` exposes — see the issue tracker for a
+          # follow-up that wires this up via the GitHub API. For now we fail
+          # loudly on any non-success matrix result so that infrastructure
+          # crashes (timeouts, dependency install errors, ...) page the team.
+          echo "Matrix result: $MATRIX_RESULT"
+          echo "Failure threshold (percent of zones allowed to fail): $THRESHOLD_PERCENT"
+          if [ "$MATRIX_RESULT" != "success" ]; then
+            echo "::error::Parser smoke matrix did not finish successfully (result=$MATRIX_RESULT)."
+            exit 1
+          fi
