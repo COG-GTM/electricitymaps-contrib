@@ -8,8 +8,36 @@ from typing import Any, NamedTuple
 
 from electricitymap.contrib.config.model import CONFIG_MODEL
 
-PARSER_FOLDERS = Path(__file__).parent.resolve() / "../parsers"
-PARSER_FILES_GLOB = f"{PARSER_FOLDERS.resolve()}/*.py"
+PARSER_FOLDERS = (
+    Path(__file__).parent.resolve() / "../electricitymap/contrib/parsers"
+).resolve()
+PARSER_FILES_GLOB = f"{PARSER_FOLDERS}/*.py"
+
+# Files that exist on disk in the parser folder but are NOT registered as a
+# `parsers.production` / `consumption` / `price` / etc. function for any zone or
+# exchange. `__init__.py` is package boilerplate and should always be excluded.
+# The remaining entries are parsers that are not currently wired to any zone —
+# they are tracked here as known-orphans so that any new orphan added in the
+# future causes the test below to fail in CI.
+EXPECTED_UNUSED_FILES = {
+    "__init__.py",
+    # TODO: archive — none of the entries below are referenced by any zone or
+    # exchange config. They should either be re-wired to the appropriate
+    # zone/exchange config or moved under
+    # `electricitymap/contrib/parsers/archived/`.
+    "CH.py",
+    "ENERCAL.py",
+    "IN_DL.py",
+    "IN_HP.py",
+    "IN_KA.py",
+    "IN_MH.py",
+    "IN_PB.py",
+    "IN_UT.py",
+    "NL.py",
+    "NO-NO4_SE.py",
+    "US_PREPA.py",
+    "eSett.py",
+}
 _PARSER_FUNCTION_ARGS = ["zone_key", "session", "target_datetime", "logger"]
 _CAPACITY_PARSER_FUNCTION_ARGS = ["zone_key", "target_datetime", "session"]
 _EXCHANGE_FUNCTION_ARGS = [
@@ -184,13 +212,20 @@ class ParserInterfaceTestcase(unittest.TestCase):
             for f in self.zone_parser_functions
         }
 
-        all_parser_files = {
-            f.rsplit("/", 1)[-1] for f in glob.glob(PARSER_FILES_GLOB)
-        } - {"example.py", "__init__.py"}
+        all_parser_files = {f.rsplit("/", 1)[-1] for f in glob.glob(PARSER_FILES_GLOB)}
 
         unused_parser_files = all_parser_files - parser_files_used
 
-        print("> unused_parser_files", unused_parser_files)
+        self.assertEqual(
+            unused_parser_files,
+            EXPECTED_UNUSED_FILES,
+            (
+                "Unused parser files diverged from EXPECTED_UNUSED_FILES. "
+                "Either wire the new file(s) to a zone / exchange config, "
+                "move them under electricitymap/contrib/parsers/archived/, "
+                "or update EXPECTED_UNUSED_FILES if the change is intentional."
+            ),
+        )
 
 
 if __name__ == "__main__":
