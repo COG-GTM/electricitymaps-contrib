@@ -21,6 +21,7 @@ def validate_datapoint_format(datapoint: dict[str, Any], kind: str, zone_key: Zo
     standard_keys = ["datetime", "source"]
     keys_dict = {
         "consumption": ["zoneKey", "consumption"] + standard_keys,
+        "production": ["zoneKey", "production"] + standard_keys,
         "exchange": ["sortedZoneKeys", "netFlow"] + standard_keys,
         "price": ["zoneKey", "currency", "price"] + standard_keys,
         "consumptionForecast": ["zoneKey", "value"] + standard_keys,
@@ -60,6 +61,28 @@ def validate_consumption(obj: dict, zone_key: ZoneKey) -> None:
         raise ValidationError(
             f"{zone_key}: consumption is not realistic (>500GW) {obj['consumption']}"
         )
+    validate_reasonable_time(obj, zone_key)
+
+
+def validate_production(obj: dict, zone_key: ZoneKey) -> None:
+    validate_datapoint_format(datapoint=obj, kind="production", zone_key=zone_key)
+    production = obj["production"] or {}
+    total_production = sum(v for v in production.values() if v is not None)
+    if total_production < 0:
+        raise ValidationError(
+            f"{zone_key}: total production has negative value {total_production}"
+        )
+    # Plausibility Check, no more than 500GW total production
+    if total_production > 500000:
+        raise ValidationError(
+            f"{zone_key}: total production is not realistic (>500GW) {total_production}"
+        )
+    # Per-mode plausibility: flag any single-mode value >500GW
+    for mode, value in production.items():
+        if value is not None and value > 500000:
+            raise ValidationError(
+                f"{zone_key}: production mode {mode} is not realistic (>500GW) {value}"
+            )
     validate_reasonable_time(obj, zone_key)
 
 
