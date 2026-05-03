@@ -1190,3 +1190,120 @@ def test_exchange_capacity_forecast_list_to_list_sorted_by_datetime():
     assert result[0]["sortedZoneKeys"] == ZoneKey("AT->DE")
     assert result[0]["source"] == "trust.me"
     assert result[0]["sourceType"] == EventSourceType.published
+
+
+def test_dropped_count_starts_at_zero():
+    exchange_list = ExchangeList(logging.Logger("test"))
+    consumption_list = TotalConsumptionList(logging.Logger("test"))
+    production_list = ProductionBreakdownList(logging.Logger("test"))
+    price_list = PriceList(logging.Logger("test"))
+    assert exchange_list.dropped_count == 0
+    assert consumption_list.dropped_count == 0
+    assert production_list.dropped_count == 0
+    assert price_list.dropped_count == 0
+
+
+def test_dropped_count_increments_on_invalid_exchange():
+    exchange_list = ExchangeList(logging.Logger("test"))
+    # Invalid: zoneKey is not a properly sorted exchange key, so Event.create returns None.
+    exchange_list.append(
+        zoneKey=ZoneKey("AT"),
+        datetime=datetime(2023, 1, 1, tzinfo=timezone.utc),
+        netFlow=1,
+        source="trust.me",
+    )
+    assert len(exchange_list.events) == 0
+    assert exchange_list.dropped_count == 1
+
+
+def test_dropped_count_increments_on_invalid_consumption():
+    consumption_list = TotalConsumptionList(logging.Logger("test"))
+    # Invalid: negative consumption is rejected by Event.create.
+    consumption_list.append(
+        zoneKey=ZoneKey("AT"),
+        datetime=datetime(2023, 1, 1, tzinfo=timezone.utc),
+        consumption=-1,
+        source="trust.me",
+    )
+    assert len(consumption_list.events) == 0
+    assert consumption_list.dropped_count == 1
+
+
+def test_dropped_count_increments_on_invalid_price():
+    price_list = PriceList(logging.Logger("test"))
+    # Invalid: an unknown ISO-4217 currency causes Event.create to return None.
+    price_list.append(
+        zoneKey=ZoneKey("AT"),
+        datetime=datetime(2023, 1, 1, tzinfo=timezone.utc),
+        price=1,
+        source="trust.me",
+        currency="EURO",
+    )
+    assert len(price_list.events) == 0
+    assert price_list.dropped_count == 1
+
+
+def test_dropped_count_increments_on_invalid_production():
+    production_list = ProductionBreakdownList(logging.Logger("test"))
+    # Invalid: naive datetime causes Event.create to return None.
+    production_list.append(
+        zoneKey=ZoneKey("AT"),
+        datetime=datetime(2023, 1, 1),
+        production=ProductionMix(wind=10),
+        source="trust.me",
+    )
+    assert len(production_list.events) == 0
+    assert production_list.dropped_count == 1
+
+
+def test_dropped_count_only_increments_on_invalid_events():
+    exchange_list = ExchangeList(logging.Logger("test"))
+    exchange_list.append(
+        zoneKey=ZoneKey("AT->DE"),
+        datetime=datetime(2023, 1, 1, tzinfo=timezone.utc),
+        netFlow=1,
+        source="trust.me",
+    )
+    exchange_list.append(
+        zoneKey=ZoneKey("AT"),
+        datetime=datetime(2023, 1, 2, tzinfo=timezone.utc),
+        netFlow=1,
+        source="trust.me",
+    )
+    exchange_list.append(
+        zoneKey=ZoneKey("AT->DE"),
+        datetime=datetime(2023, 1, 3, tzinfo=timezone.utc),
+        netFlow=2,
+        source="trust.me",
+    )
+    assert len(exchange_list.events) == 2
+    assert exchange_list.dropped_count == 1
+
+
+def test_log_summary_emits_expected_message():
+    exchange_list = ExchangeList(logging.Logger("test"))
+    exchange_list.append(
+        zoneKey=ZoneKey("AT->DE"),
+        datetime=datetime(2023, 1, 1, tzinfo=timezone.utc),
+        netFlow=1,
+        source="trust.me",
+    )
+    # One invalid append to bump dropped_count.
+    exchange_list.append(
+        zoneKey=ZoneKey("AT"),
+        datetime=datetime(2023, 1, 2, tzinfo=timezone.utc),
+        netFlow=1,
+        source="trust.me",
+    )
+    with patch.object(exchange_list.logger, "info") as mock_info:
+        exchange_list.log_summary()
+        mock_info.assert_called_once_with("ExchangeList: appended 1 events, dropped 1")
+
+
+def test_log_summary_uses_subclass_name():
+    consumption_list = TotalConsumptionList(logging.Logger("test"))
+    with patch.object(consumption_list.logger, "info") as mock_info:
+        consumption_list.log_summary()
+        mock_info.assert_called_once_with(
+            "TotalConsumptionList: appended 0 events, dropped 0"
+        )

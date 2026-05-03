@@ -35,10 +35,12 @@ class EventList(ABC, Generic[EventType]):
 
     logger: Logger
     events: list[EventType]
+    dropped_count: int = 0
 
     def __init__(self, logger: Logger):
         self.events = []
         self.logger = logger
+        self.dropped_count = 0
 
     def __len__(self):
         return len(self.events)
@@ -52,6 +54,7 @@ class EventList(ABC, Generic[EventType]):
     def __add__(self, other: "EventList") -> "EventList":
         new_list = self.__class__(self.logger)
         new_list.events = self.events + other.events
+        new_list.dropped_count = self.dropped_count + other.dropped_count
         return new_list
 
     def __getitem__(self, datetime) -> EventType:
@@ -65,6 +68,13 @@ class EventList(ABC, Generic[EventType]):
         """Handles creation of events and adding it to the batch."""
         # TODO Handle one day the creation of mixed batches.
         pass
+
+    def log_summary(self) -> None:
+        """Log a summary of how many events were appended vs. dropped."""
+        self.logger.info(
+            f"{self.__class__.__name__}: appended {len(self.events)} events, "
+            f"dropped {self.dropped_count}"
+        )
 
     def to_list(self) -> list[dict[str, Any]]:
         return sorted(
@@ -175,6 +185,8 @@ class ExchangeList(AggregatableEventList[Exchange]):
         )
         if event:
             self.events.append(event)
+        else:
+            self.dropped_count += 1
 
     @staticmethod
     def merge_exchanges(
@@ -257,6 +269,8 @@ class ExchangeCapacityList(EventList[ExchangeCapacity]):
         )
         if event:
             self.events.append(event)
+        else:
+            self.dropped_count += 1
 
 
 class ProductionBreakdownList(AggregatableEventList[ProductionBreakdown]):
@@ -274,6 +288,8 @@ class ProductionBreakdownList(AggregatableEventList[ProductionBreakdown]):
         )
         if event:
             self.events.append(event)
+        else:
+            self.dropped_count += 1
 
     @staticmethod
     def merge_production_breakdowns(
@@ -399,6 +415,8 @@ class TotalProductionList(AggregatableEventList[TotalProduction]):
         )
         if event:
             self.events.append(event)
+        else:
+            self.dropped_count += 1
 
     @staticmethod
     def merge_total_production_lists(
@@ -451,6 +469,8 @@ class TotalConsumptionList(AggregatableEventList[TotalConsumption]):
         )
         if event:
             self.events.append(event)
+        else:
+            self.dropped_count += 1
 
     @staticmethod
     def merge_consumption_lists(
@@ -506,6 +526,8 @@ class PriceList(EventList[Price]):
         )
         if event:
             self.events.append(event)
+        else:
+            self.dropped_count += 1
 
 
 class LocationalMarginalPriceList(EventList[LocationalMarginalPrice]):
@@ -524,6 +546,8 @@ class LocationalMarginalPriceList(EventList[LocationalMarginalPrice]):
         )
         if event:
             self.events.append(event)
+        else:
+            self.dropped_count += 1
 
 
 class GridAlertList(EventList[GridAlert]):
@@ -551,3 +575,5 @@ class GridAlertList(EventList[GridAlert]):
         )
         if event:
             self.events.append(event)
+        else:
+            self.dropped_count += 1
