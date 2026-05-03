@@ -77,3 +77,54 @@ e4 = {
     "netFlow": 73.0,
     "source": "mysource.com",
 }
+
+# Valid production datapoint.
+p1 = {
+    "zoneKey": "FR",
+    "datetime": dt,
+    "production": prod,
+    "storage": {
+        "hydro": -10.0,
+    },
+    "source": "mysource.com",
+}
+
+# Production datapoint where the sum of values is negative.
+p2 = {
+    "zoneKey": "FR",
+    "datetime": dt,
+    "production": {
+        "biomass": 10.0,
+        "coal": -200.0,
+    },
+    "source": "mysource.com",
+}
+
+# Production datapoint where total exceeds 500GW (i.e. > 500_000 MW).
+p3 = {
+    "zoneKey": "FR",
+    "datetime": dt,
+    "production": {
+        "biomass": 10.0,
+        "coal": 600_000.0,
+    },
+    "source": "mysource.com",
+}
+
+# Production datapoint missing the required `production` key.
+p4 = {
+    "zoneKey": "FR",
+    "datetime": dt,
+    "source": "mysource.com",
+}
+
+# Production datapoint where a single mode exceeds 500GW but total stays below.
+p5 = {
+    "zoneKey": "FR",
+    "datetime": dt,
+    "production": {
+        "biomass": 600_000.0,
+        "coal": -200_000.0,
+    },
+    "source": "mysource.com",
+}
