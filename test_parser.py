@@ -17,6 +17,7 @@ from electricitymap.contrib.parsers.lib.quality import (
     ValidationError,
     validate_consumption,
     validate_exchange,
+    validate_production,
 )
 from electricitymap.contrib.types import EXCHANGE_DATA_TYPES, ParserDataType, ZoneKey
 
@@ -126,6 +127,8 @@ def test_parser(zone: ZoneKey, data_type: str, target_datetime: str | None):
                 validate_consumption(event, zone)
             elif parser_data_type == ParserDataType.EXCHANGE:
                 validate_exchange(event, zone)
+            elif parser_data_type == ParserDataType.PRODUCTION:
+                validate_production(event, zone)
         except ValidationError as e:
             logger.warning(f"Validation failed @ {event['datetime']}: {e}")
 
