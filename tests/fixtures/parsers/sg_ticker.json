@@ -1,0 +1,23 @@
+{
+  "Date": "03 May 2026",
+  "Period": "27",
+  "Sections": [
+    {
+      "Name": "Energy",
+      "SectionData": [
+        { "Label": "Demand", "Value": "5,000MW" },
+        { "Label": "System Loss", "Value": "100MW" },
+        { "Label": "USEP", "Value": "$120.50/MWh" }
+      ]
+    },
+    {
+      "Name": "Generator Type Share",
+      "SectionData": [
+        { "Label": "CCGT/COGEN/TRIGEN", "Value": "90.00%" },
+        { "Label": "GT", "Value": "5.00%" },
+        { "Label": "ST", "Value": "4.00%" },
+        { "Label": "ANOTHER", "Value": "1.00%" }
+      ]
+    }
+  ]
+}

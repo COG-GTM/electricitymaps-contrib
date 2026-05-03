@@ -1,0 +1,1 @@
+<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope"><soap:Body><GenerationResponse xmlns="https://www.ceps.cz/CepsData/"><GenerationResult><series><serie name="TPP [MW]" id="s_tpp"/></series></GenerationResult></GenerationResponse></soap:Body></soap:Envelope>
