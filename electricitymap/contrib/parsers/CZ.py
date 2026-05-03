@@ -194,7 +194,7 @@ def fetch_production(
             )
 
     else:
-        ParserException(
+        raise ParserException(
             "CZ.py",
             f"There was no data returned for {zone_key} at {target_datetime}",
             zone_key,
