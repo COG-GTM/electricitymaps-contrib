@@ -343,7 +343,7 @@ def test_production_list_logs_error():
             source="trust.me",
         )
         mock_error.assert_called_once()
-    with patch.object(production_list.logger, "debug") as mock_logger:
+    with patch.object(production_list.logger, "warning") as mock_logger:
         production_list.append(
             zoneKey=ZoneKey("AT"),
             datetime=datetime(2023, 1, 1, tzinfo=timezone.utc),

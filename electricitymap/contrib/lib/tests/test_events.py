@@ -509,7 +509,7 @@ def test_negative_production_gets_corrected():
         hydro=-20,
     )
     logger = logging.Logger("test")
-    with patch.object(logger, "debug") as mock_logger:
+    with patch.object(logger, "warning") as mock_logger:
         breakdown = ProductionBreakdown.create(
             logger=logger,
             zoneKey=ZoneKey("DE"),
@@ -535,7 +535,7 @@ def test_self_report_negative_value():
     # This one has been set through the attributes and should be reported as None.
     mix.biomass = -10
     logger = logging.Logger("test")
-    with patch.object(logger, "debug") as mock_logger:
+    with patch.object(logger, "warning") as mock_logger:
         breakdown = ProductionBreakdown.create(
             logger=logger,
             zoneKey=ZoneKey("DE"),
