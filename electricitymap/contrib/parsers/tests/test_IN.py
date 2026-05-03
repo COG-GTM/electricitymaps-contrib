@@ -7,7 +7,9 @@ from pandas.testing import assert_series_equal
 
 from electricitymap.contrib.parsers.IN import (
     compute_zone_key_share_per_mode_out_of_total,
+    get_energy_met_grid_india_report,
     parse_15m_production_grid_india_report,
+    parse_consumption_grid_india_report,
     parse_daily_production_grid_india_report,
     parse_daily_total_production_grid_india_report,
     parse_total_production_15min_grid_india_report,
@@ -67,3 +69,28 @@ def test_parse_daily_production_grid_india_report(snapshot):
         content, "IN-EA", datetime(2025, 4, 8, 0, 0)
     )
     assert snapshot == result
+
+
+def test_get_energy_met_grid_india_report():
+    # Reference values come directly from the 'A. Power Supply Position'
+    # table of the 08.04.25 NLDC PSP report (Energy Met row, in MU).
+    assert get_energy_met_grid_india_report(content, "IN") == 5022.47
+    assert get_energy_met_grid_india_report(content, "IN-NO") == 1319
+    assert get_energy_met_grid_india_report(content, "IN-WE") == 1708.8
+    assert get_energy_met_grid_india_report(content, "IN-EA") == 623.35
+
+
+def test_parse_consumption_grid_india_report():
+    target_datetime = datetime(2025, 4, 8, 0, 0)
+    result = parse_consumption_grid_india_report(content, "IN-WE", target_datetime)
+
+    # Should yield 24 hourly points all with the same average MW value.
+    assert len(result) == 24
+    expected_mw = 1708.8 / 0.024
+    for point in result:
+        assert point["zoneKey"] == "IN-WE"
+        assert point["consumption"] == expected_mw
+        assert point["source"] == "grid-india.in"
+    # The first and last datapoints should bracket the report day.
+    assert result[0]["datetime"].hour == 0
+    assert result[-1]["datetime"].hour == 23
