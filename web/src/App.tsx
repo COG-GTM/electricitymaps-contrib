@@ -14,7 +14,7 @@ import type {
   ZoneInfo,
   ZoneMockData,
 } from './types';
-import { generateTimeSeries } from './mockTimeSeries';
+import { buildSyntheticPoint, generateTimeSeries } from './mockTimeSeries';
 
 export default function App() {
   const [zones, setZones] = useState<Record<string, ZoneInfo>>({});
@@ -87,34 +87,36 @@ export default function App() {
     setSearchOpen(false);
   }, []);
 
-  // Build the carbon-intensity series for the selected zone, falling back to
-  // synthetic data when the captured timeseries is missing.
+  // Build the carbon-intensity series for the selected zone. When captured
+  // timeseries data is available, use its timestamps as the time axis and
+  // pull a synthetic production breakdown for each one (the captured data
+  // doesn't include a per-timestamp production breakdown). Otherwise fall
+  // back to a fully synthetic 48h hourly series.
   const selectedSeries = useMemo<TimeSeriesPoint[]>(() => {
     if (!selectedZone) return [];
     const zd = mockData[selectedZone];
     if (!zd) return [];
     const captured = timeseries[selectedZone];
-    const synthetic = generateTimeSeries(selectedZone, zd, 48);
     if (captured && captured.length > 1) {
-      // Merge: captured CI per timestamp, synthetic production breakdown.
-      const byTime: Record<string, TimeSeriesPoint> = {};
-      for (const p of synthetic) byTime[p.datetime] = p;
-      for (const p of captured) {
-        const key = p.datetime;
-        const synthMatch =
-          byTime[key] ?? synthetic[synthetic.length - 1];
-        byTime[key] = {
-          datetime: key,
-          carbonIntensity: p.carbonIntensity,
-          production: synthMatch?.production,
-        };
-      }
-      return Object.values(byTime).sort((a, b) =>
-        a.datetime < b.datetime ? -1 : 1,
-      );
+      return captured
+        .slice()
+        .sort((a, b) => (a.datetime < b.datetime ? -1 : 1))
+        .map((p) => {
+          const synth = buildSyntheticPoint(
+            selectedZone,
+            zd,
+            new Date(p.datetime),
+          );
+          return {
+            datetime: p.datetime,
+            carbonIntensity: p.carbonIntensity,
+            production: synth.production,
+          };
+        });
     }
-    return synthetic;
-  }, [selectedZone, mockData, timeseries]);
+    const anchor = dataTimestamp ? new Date(dataTimestamp) : new Date();
+    return generateTimeSeries(selectedZone, zd, 48, anchor);
+  }, [selectedZone, mockData, timeseries, dataTimestamp]);
 
   return (
     <div className="app">
