@@ -1,0 +1,2655 @@
+{
+  "AD": {
+    "zoneName": "Andorra",
+    "countryKey": "AD",
+    "countryName": "Andorra",
+    "region": "Europe",
+    "timezone": "Europe/Andorra"
+  },
+  "AE": {
+    "zoneName": "United Arab Emirates",
+    "countryKey": "AE",
+    "countryName": "United Arab Emirates",
+    "region": "Asia",
+    "timezone": "Asia/Dubai"
+  },
+  "AF": {
+    "zoneName": "Afghanistan",
+    "countryKey": "AF",
+    "countryName": "Afghanistan",
+    "region": "Asia",
+    "timezone": "Asia/Kabul"
+  },
+  "AG": {
+    "zoneName": "Antigua and Barbuda",
+    "countryKey": "AG",
+    "countryName": "Antigua and Barbuda",
+    "region": "Americas",
+    "timezone": "America/Antigua"
+  },
+  "AL": {
+    "zoneName": "Albania",
+    "countryKey": "AL",
+    "countryName": "Albania",
+    "region": "Europe",
+    "timezone": "Europe/Tirane"
+  },
+  "AM": {
+    "zoneName": "Armenia",
+    "countryKey": "AM",
+    "countryName": "Armenia",
+    "region": "Asia",
+    "timezone": "Asia/Yerevan"
+  },
+  "AO": {
+    "zoneName": "Angola",
+    "countryKey": "AO",
+    "countryName": "Angola",
+    "region": "Africa",
+    "timezone": "Africa/Luanda"
+  },
+  "AR": {
+    "zoneName": "Argentina",
+    "countryKey": "AR",
+    "countryName": "Argentina",
+    "region": "Americas",
+    "timezone": "America/Argentina/Buenos_Aires"
+  },
+  "AT": {
+    "zoneName": "Austria",
+    "countryKey": "AT",
+    "countryName": "Austria",
+    "region": "Europe",
+    "timezone": "Europe/Vienna"
+  },
+  "AU-LH": {
+    "zoneName": "Lord Howe Island",
+    "countryKey": "AU",
+    "countryName": "Australia",
+    "region": "Oceania",
+    "timezone": "Australia/Lord_Howe"
+  },
+  "AU-NSW": {
+    "zoneName": "New South Wales",
+    "countryKey": "AU",
+    "countryName": "Australia",
+    "region": "Oceania",
+    "timezone": "Australia/Sydney"
+  },
+  "AU-NT": {
+    "zoneName": "Northern Territory",
+    "countryKey": "AU",
+    "countryName": "Australia",
+    "region": "Oceania",
+    "timezone": "Australia/Darwin"
+  },
+  "AU-QLD": {
+    "zoneName": "Queensland",
+    "countryKey": "AU",
+    "countryName": "Australia",
+    "region": "Oceania",
+    "timezone": "Australia/Brisbane"
+  },
+  "AU-SA": {
+    "zoneName": "South Australia",
+    "countryKey": "AU",
+    "countryName": "Australia",
+    "region": "Oceania",
+    "timezone": "Australia/Adelaide"
+  },
+  "AU-TAS-CBI": {
+    "zoneName": "Cape Barren Island",
+    "countryKey": "AU",
+    "countryName": "Australia",
+    "region": "Oceania",
+    "timezone": "Australia/Lord_Howe"
+  },
+  "AU-TAS-FI": {
+    "zoneName": "Flinders Island",
+    "countryKey": "AU",
+    "countryName": "Australia",
+    "region": "Oceania",
+    "timezone": "Australia/Hobart"
+  },
+  "AU-TAS-KI": {
+    "zoneName": "King Island",
+    "countryKey": "AU",
+    "countryName": "Australia",
+    "region": "Oceania",
+    "timezone": "Australia/Hobart"
+  },
+  "AU-TAS": {
+    "zoneName": "Tasmania",
+    "countryKey": "AU",
+    "countryName": "Australia",
+    "region": "Oceania",
+    "timezone": "Australia/Hobart"
+  },
+  "AU-VIC": {
+    "zoneName": "Victoria",
+    "countryKey": "AU",
+    "countryName": "Australia",
+    "region": "Oceania",
+    "timezone": "Australia/Melbourne"
+  },
+  "AU-WA-RI": {
+    "zoneName": "Rottnest Island",
+    "countryKey": "AU",
+    "countryName": "Australia",
+    "region": "Oceania",
+    "timezone": "Australia/Perth"
+  },
+  "AU-WA": {
+    "zoneName": "Western Australia",
+    "countryKey": "AU",
+    "countryName": "Australia",
+    "region": "Oceania",
+    "timezone": "Australia/Perth"
+  },
+  "AU": {
+    "zoneName": "Australia",
+    "countryKey": "AU",
+    "countryName": "Australia",
+    "region": "Oceania",
+    "timezone": "Australia/Sydney"
+  },
+  "AW": {
+    "zoneName": "Aruba",
+    "countryKey": "AW",
+    "countryName": "Aruba",
+    "region": "Americas",
+    "timezone": "America/Aruba"
+  },
+  "AX": {
+    "zoneName": "Åland Islands",
+    "countryKey": "AX",
+    "countryName": "Åland Islands",
+    "region": "Europe",
+    "timezone": "Europe/Mariehamn"
+  },
+  "AZ": {
+    "zoneName": "Azerbaijan",
+    "countryKey": "AZ",
+    "countryName": "Azerbaijan",
+    "region": "Asia",
+    "timezone": "Asia/Baku"
+  },
+  "BA": {
+    "zoneName": "Bosnia and Herzegovina",
+    "countryKey": "BA",
+    "countryName": "Bosnia and Herzegovina",
+    "region": "Europe",
+    "timezone": "Asia/Bahrain"
+  },
+  "BB": {
+    "zoneName": "Barbados",
+    "countryKey": "BB",
+    "countryName": "Barbados",
+    "region": "Americas",
+    "timezone": "America/Barbados"
+  },
+  "BD": {
+    "zoneName": "Bangladesh",
+    "countryKey": "BD",
+    "countryName": "Bangladesh",
+    "region": "Asia",
+    "timezone": "Asia/Dhaka"
+  },
+  "BE": {
+    "zoneName": "Belgium",
+    "countryKey": "BE",
+    "countryName": "Belgium",
+    "region": "Europe",
+    "timezone": "Europe/Brussels"
+  },
+  "BF": {
+    "zoneName": "Burkina Faso",
+    "countryKey": "BF",
+    "countryName": "Burkina Faso",
+    "region": "Africa",
+    "timezone": "Africa/Ouagadougou"
+  },
+  "BG": {
+    "zoneName": "Bulgaria",
+    "countryKey": "BG",
+    "countryName": "Bulgaria",
+    "region": "Europe",
+    "timezone": "Europe/Sofia"
+  },
+  "BH": {
+    "zoneName": "Bahrain",
+    "countryKey": "BH",
+    "countryName": "Bahrain",
+    "region": "Asia",
+    "timezone": "Asia/Bahrain"
+  },
+  "BI": {
+    "zoneName": "Burundi",
+    "countryKey": "BI",
+    "countryName": "Burundi",
+    "region": "Africa",
+    "timezone": "Africa/Bujumbura"
+  },
+  "BJ": {
+    "zoneName": "Benin",
+    "countryKey": "BJ",
+    "countryName": "Benin",
+    "region": "Africa",
+    "timezone": "Africa/Porto-Novo"
+  },
+  "BM": {
+    "zoneName": "Bermuda",
+    "countryKey": "BM",
+    "countryName": "Bermuda",
+    "region": "Americas",
+    "timezone": "Atlantic/Bermuda"
+  },
+  "BN": {
+    "zoneName": "Brunei",
+    "countryKey": "BN",
+    "countryName": "Brunei",
+    "region": "Asia",
+    "timezone": "Asia/Brunei"
+  },
+  "BO": {
+    "zoneName": "Bolivia",
+    "countryKey": "BO",
+    "countryName": "Bolivia",
+    "region": "Americas",
+    "timezone": "America/La_Paz"
+  },
+  "BR-CS": {
+    "zoneName": "Central Brazil",
+    "countryKey": "BR",
+    "countryName": "Brazil",
+    "region": "Americas",
+    "timezone": "America/Sao_Paulo"
+  },
+  "BR-N": {
+    "zoneName": "North Brazil",
+    "countryKey": "BR",
+    "countryName": "Brazil",
+    "region": "Americas",
+    "timezone": "America/Sao_Paulo"
+  },
+  "BR-NE": {
+    "zoneName": "North-East Brazil",
+    "countryKey": "BR",
+    "countryName": "Brazil",
+    "region": "Americas",
+    "timezone": "America/Sao_Paulo"
+  },
+  "BR-S": {
+    "zoneName": "South Brazil",
+    "countryKey": "BR",
+    "countryName": "Brazil",
+    "region": "Americas",
+    "timezone": "America/Sao_Paulo"
+  },
+  "BR": {
+    "zoneName": "Brazil",
+    "countryKey": "BR",
+    "countryName": "Brazil",
+    "region": "Americas",
+    "timezone": "America/Sao_Paulo"
+  },
+  "BS": {
+    "zoneName": "Bahamas",
+    "countryKey": "BS",
+    "countryName": "Bahamas",
+    "region": "Americas",
+    "timezone": "America/Nassau"
+  },
+  "BT": {
+    "zoneName": "Bhutan",
+    "countryKey": "BT",
+    "countryName": "Bhutan",
+    "region": "Asia",
+    "timezone": "Asia/Thimphu"
+  },
+  "BW": {
+    "zoneName": "Botswana",
+    "countryKey": "BW",
+    "countryName": "Botswana",
+    "region": "Africa",
+    "timezone": "Africa/Gaborone"
+  },
+  "BY": {
+    "zoneName": "Belarus",
+    "countryKey": "BY",
+    "countryName": "Belarus",
+    "region": "Europe",
+    "timezone": "Europe/Minsk"
+  },
+  "BZ": {
+    "zoneName": "Belize",
+    "countryKey": "BZ",
+    "countryName": "Belize",
+    "region": "Americas",
+    "timezone": "America/Belize"
+  },
+  "CA-AB": {
+    "zoneName": "Alberta",
+    "countryKey": "CA",
+    "countryName": "Canada",
+    "region": "Americas",
+    "timezone": "America/Edmonton"
+  },
+  "CA-BC": {
+    "zoneName": "British Columbia",
+    "countryKey": "CA",
+    "countryName": "Canada",
+    "region": "Americas",
+    "timezone": "America/Vancouver"
+  },
+  "CA-MB": {
+    "zoneName": "Manitoba",
+    "countryKey": "CA",
+    "countryName": "Canada",
+    "region": "Americas",
+    "timezone": "America/Winnipeg"
+  },
+  "CA-NB": {
+    "zoneName": "New Brunswick",
+    "countryKey": "CA",
+    "countryName": "Canada",
+    "region": "Americas",
+    "timezone": "America/Moncton"
+  },
+  "CA-NL": {
+    "zoneName": "Newfoundland and Labrador",
+    "countryKey": "CA",
+    "countryName": "Canada",
+    "region": "Americas",
+    "timezone": "America/St_Johns"
+  },
+  "CA-NS": {
+    "zoneName": "Nova Scotia",
+    "countryKey": "CA",
+    "countryName": "Canada",
+    "region": "Americas",
+    "timezone": "America/Halifax"
+  },
+  "CA-NT": {
+    "zoneName": "Northwest Territories",
+    "countryKey": "CA",
+    "countryName": "Canada",
+    "region": "Americas",
+    "timezone": "America/Yellowknife"
+  },
+  "CA-NU": {
+    "zoneName": "Nunavut",
+    "countryKey": "CA",
+    "countryName": "Canada",
+    "region": "Americas",
+    "timezone": "America/Rankin_Inlet"
+  },
+  "CA-ON": {
+    "zoneName": "Ontario",
+    "countryKey": "CA",
+    "countryName": "Canada",
+    "region": "Americas",
+    "timezone": "America/Toronto"
+  },
+  "CA-PE": {
+    "zoneName": "Prince Edward Island",
+    "countryKey": "CA",
+    "countryName": "Canada",
+    "region": "Americas",
+    "timezone": "America/Halifax"
+  },
+  "CA-QC": {
+    "zoneName": "Québec",
+    "countryKey": "CA",
+    "countryName": "Canada",
+    "region": "Americas",
+    "timezone": "America/Toronto"
+  },
+  "CA-SK": {
+    "zoneName": "Saskatchewan",
+    "countryKey": "CA",
+    "countryName": "Canada",
+    "region": "Americas",
+    "timezone": "America/Regina"
+  },
+  "CA-YT": {
+    "zoneName": "Yukon",
+    "countryKey": "CA",
+    "countryName": "Canada",
+    "region": "Americas",
+    "timezone": "America/Whitehorse"
+  },
+  "CA": {
+    "zoneName": "Canada",
+    "countryKey": "CA",
+    "countryName": "Canada",
+    "region": "Americas",
+    "timezone": "America/Toronto"
+  },
+  "CD": {
+    "zoneName": "Democratic Republic of the Congo",
+    "countryKey": "CD",
+    "countryName": "Democratic Republic of the Congo",
+    "region": "Africa",
+    "timezone": "Africa/Kinshasa"
+  },
+  "CF": {
+    "zoneName": "Central African Republic",
+    "countryKey": "CF",
+    "countryName": "Central African Republic",
+    "region": "Africa",
+    "timezone": "Africa/Bangui"
+  },
+  "CG": {
+    "zoneName": "Congo",
+    "countryKey": "CG",
+    "countryName": "Congo",
+    "region": "Africa",
+    "timezone": "Africa/Brazzaville"
+  },
+  "CH": {
+    "zoneName": "Switzerland",
+    "countryKey": "CH",
+    "countryName": "Switzerland",
+    "region": "Europe",
+    "timezone": "Europe/Zurich"
+  },
+  "CI": {
+    "zoneName": "Ivory Coast",
+    "countryKey": "CI",
+    "countryName": "Ivory Coast",
+    "region": "Africa",
+    "timezone": "Africa/Abidjan"
+  },
+  "CL-CHP": {
+    "zoneName": "Easter Island",
+    "countryKey": "CL",
+    "countryName": "Chile",
+    "region": "Americas",
+    "timezone": "Pacific/Easter"
+  },
+  "CL-SEA": {
+    "zoneName": "Sistema Eléctrico de Aysén",
+    "countryKey": "CL",
+    "countryName": "Chile",
+    "region": "Americas",
+    "timezone": "America/Santiago"
+  },
+  "CL-SEM": {
+    "zoneName": "Sistema Eléctrico de Magallanes",
+    "countryKey": "CL",
+    "countryName": "Chile",
+    "region": "Americas",
+    "timezone": "America/Punta_Arenas"
+  },
+  "CL-SEN": {
+    "zoneName": "Sistema Eléctrico Nacional",
+    "countryKey": "CL",
+    "countryName": "Chile",
+    "region": "Americas",
+    "timezone": "America/Santiago"
+  },
+  "CM": {
+    "zoneName": "Cameroon",
+    "countryKey": "CM",
+    "countryName": "Cameroon",
+    "region": "Africa",
+    "timezone": "Africa/Douala"
+  },
+  "CN": {
+    "zoneName": "China",
+    "countryKey": "CN",
+    "countryName": "China",
+    "region": "Asia",
+    "timezone": "Asia/Shanghai"
+  },
+  "CO": {
+    "zoneName": "Colombia",
+    "countryKey": "CO",
+    "countryName": "Colombia",
+    "region": "Americas",
+    "timezone": "America/Bogota"
+  },
+  "CR": {
+    "zoneName": "Costa Rica",
+    "countryKey": "CR",
+    "countryName": "Costa Rica",
+    "region": "Americas",
+    "timezone": "America/Costa_Rica"
+  },
+  "CU": {
+    "zoneName": "Cuba",
+    "countryKey": "CU",
+    "countryName": "Cuba",
+    "region": "Americas",
+    "timezone": "America/Havana"
+  },
+  "CV": {
+    "zoneName": "Cabo Verde",
+    "countryKey": "CV",
+    "countryName": "Cabo Verde",
+    "region": "Africa",
+    "timezone": "Atlantic/Cape_Verde"
+  },
+  "CW": {
+    "zoneName": "Curaçao",
+    "countryKey": "CW",
+    "countryName": "Curaçao",
+    "region": "Americas",
+    "timezone": "America/Curacao"
+  },
+  "CY": {
+    "zoneName": "Cyprus",
+    "countryKey": "CY",
+    "countryName": "Cyprus",
+    "region": "Asia",
+    "timezone": "Asia/Nicosia"
+  },
+  "CZ": {
+    "zoneName": "Czechia",
+    "countryKey": "CZ",
+    "countryName": "Czechia",
+    "region": "Europe",
+    "timezone": "Europe/Prague"
+  },
+  "DE": {
+    "zoneName": "Germany",
+    "countryKey": "DE",
+    "countryName": "Germany",
+    "region": "Europe",
+    "timezone": "Europe/Berlin"
+  },
+  "DJ": {
+    "zoneName": "Djibouti",
+    "countryKey": "DJ",
+    "countryName": "Djibouti",
+    "region": "Africa",
+    "timezone": "Africa/Djibouti"
+  },
+  "DK-DK1": {
+    "zoneName": "West Denmark",
+    "countryKey": "DK",
+    "countryName": "Denmark",
+    "region": "Europe",
+    "timezone": "Europe/Copenhagen"
+  },
+  "DK-DK2": {
+    "zoneName": "East Denmark",
+    "countryKey": "DK",
+    "countryName": "Denmark",
+    "region": "Europe",
+    "timezone": "Europe/Copenhagen"
+  },
+  "DK": {
+    "zoneName": "Denmark",
+    "countryKey": "DK",
+    "countryName": "Denmark",
+    "region": "Europe",
+    "timezone": "Europe/Copenhagen"
+  },
+  "DM": {
+    "zoneName": "Dominica",
+    "countryKey": "DM",
+    "countryName": "Dominica",
+    "region": "Americas",
+    "timezone": "America/Dominica"
+  },
+  "DO": {
+    "zoneName": "Dominican Republic",
+    "countryKey": "DO",
+    "countryName": "Dominican Republic",
+    "region": "Americas",
+    "timezone": "America/Santo_Domingo"
+  },
+  "DZ": {
+    "zoneName": "Algeria",
+    "countryKey": "DZ",
+    "countryName": "Algeria",
+    "region": "Africa",
+    "timezone": "Africa/Algiers"
+  },
+  "EC": {
+    "zoneName": "Ecuador",
+    "countryKey": "EC",
+    "countryName": "Ecuador",
+    "region": "Americas",
+    "timezone": "America/Guayaquil"
+  },
+  "EE": {
+    "zoneName": "Estonia",
+    "countryKey": "EE",
+    "countryName": "Estonia",
+    "region": "Europe",
+    "timezone": "Europe/Tallinn"
+  },
+  "EG": {
+    "zoneName": "Egypt",
+    "countryKey": "EG",
+    "countryName": "Egypt",
+    "region": "Africa",
+    "timezone": "Africa/Cairo"
+  },
+  "EH": {
+    "zoneName": "Western Sahara",
+    "countryKey": "EH",
+    "countryName": "Western Sahara",
+    "region": "Africa",
+    "timezone": "Africa/El_Aaiun"
+  },
+  "ER": {
+    "zoneName": "Eritrea",
+    "countryKey": "ER",
+    "countryName": "Eritrea",
+    "region": "Africa",
+    "timezone": "Africa/Asmara"
+  },
+  "ES-CE": {
+    "zoneName": "Ceuta",
+    "countryKey": "ES",
+    "countryName": "Spain",
+    "region": "Europe",
+    "timezone": "Europe/Madrid"
+  },
+  "ES-CN-FV": {
+    "zoneName": "Fuerteventura",
+    "countryKey": "ES",
+    "countryName": "Spain",
+    "region": "Europe",
+    "timezone": "Atlantic/Canary"
+  },
+  "ES-CN-GC": {
+    "zoneName": "Gran Canaria",
+    "countryKey": "ES",
+    "countryName": "Spain",
+    "region": "Europe",
+    "timezone": "Atlantic/Canary"
+  },
+  "ES-CN-HI": {
+    "zoneName": "El Hierro",
+    "countryKey": "ES",
+    "countryName": "Spain",
+    "region": "Europe",
+    "timezone": "Atlantic/Canary"
+  },
+  "ES-CN-IG": {
+    "zoneName": "Isla de la Gomera",
+    "countryKey": "ES",
+    "countryName": "Spain",
+    "region": "Europe",
+    "timezone": "Atlantic/Canary"
+  },
+  "ES-CN-LP": {
+    "zoneName": "La Palma",
+    "countryKey": "ES",
+    "countryName": "Spain",
+    "region": "Europe",
+    "timezone": "Atlantic/Canary"
+  },
+  "ES-CN-LZ": {
+    "zoneName": "Lanzarote",
+    "countryKey": "ES",
+    "countryName": "Spain",
+    "region": "Europe",
+    "timezone": "Atlantic/Canary"
+  },
+  "ES-CN-TE": {
+    "zoneName": "Tenerife",
+    "countryKey": "ES",
+    "countryName": "Spain",
+    "region": "Europe",
+    "timezone": "Atlantic/Canary"
+  },
+  "ES-IB-FO": {
+    "zoneName": "Formentera",
+    "countryKey": "ES",
+    "countryName": "Spain",
+    "region": "Europe",
+    "timezone": "Europe/Madrid"
+  },
+  "ES-IB-IZ": {
+    "zoneName": "Ibiza",
+    "countryKey": "ES",
+    "countryName": "Spain",
+    "region": "Europe",
+    "timezone": "Europe/Madrid"
+  },
+  "ES-IB-MA": {
+    "zoneName": "Mallorca",
+    "countryKey": "ES",
+    "countryName": "Spain",
+    "region": "Europe",
+    "timezone": "Europe/Madrid"
+  },
+  "ES-IB-ME": {
+    "zoneName": "Menorca",
+    "countryKey": "ES",
+    "countryName": "Spain",
+    "region": "Europe",
+    "timezone": "Europe/Madrid"
+  },
+  "ES-ML": {
+    "zoneName": "Melilla",
+    "countryKey": "ES",
+    "countryName": "Spain",
+    "region": "Europe",
+    "timezone": "Europe/Madrid"
+  },
+  "ES": {
+    "zoneName": "Spain",
+    "countryKey": "ES",
+    "countryName": "Spain",
+    "region": "Europe",
+    "timezone": "Europe/Madrid"
+  },
+  "ET": {
+    "zoneName": "Ethiopia",
+    "countryKey": "ET",
+    "countryName": "Ethiopia",
+    "region": "Africa",
+    "timezone": "Africa/Addis_Ababa"
+  },
+  "FI": {
+    "zoneName": "Finland",
+    "countryKey": "FI",
+    "countryName": "Finland",
+    "region": "Europe",
+    "timezone": "Europe/Helsinki"
+  },
+  "FJ": {
+    "zoneName": "Fiji",
+    "countryKey": "FJ",
+    "countryName": "Fiji",
+    "region": "Oceania",
+    "timezone": "Pacific/Fiji"
+  },
+  "FK": {
+    "zoneName": "Falkland Islands",
+    "countryKey": "FK",
+    "countryName": "Falkland Islands",
+    "region": "Americas",
+    "timezone": "Atlantic/Stanley"
+  },
+  "FM": {
+    "zoneName": "Micronesia",
+    "countryKey": "FM",
+    "countryName": "Micronesia",
+    "region": "Oceania",
+    "timezone": "Pacific/Chuuk"
+  },
+  "FO-MI": {
+    "zoneName": "Main Islands",
+    "countryKey": "FO",
+    "countryName": "Faroe Islands",
+    "region": "Europe",
+    "timezone": "Atlantic/Faroe"
+  },
+  "FO-SI": {
+    "zoneName": "South Island",
+    "countryKey": "FO",
+    "countryName": "Faroe Islands",
+    "region": "Europe",
+    "timezone": "Atlantic/Faroe"
+  },
+  "FO": {
+    "zoneName": "Faroe Islands",
+    "countryKey": "FO",
+    "countryName": "Faroe Islands",
+    "region": "Europe",
+    "timezone": "Atlantic/Faroe"
+  },
+  "FR-COR": {
+    "zoneName": "Corsica",
+    "countryKey": "FR",
+    "countryName": "France",
+    "region": "Europe",
+    "timezone": "Europe/Paris"
+  },
+  "FR": {
+    "zoneName": "France",
+    "countryKey": "FR",
+    "countryName": "France",
+    "region": "Europe",
+    "timezone": "Europe/Paris"
+  },
+  "GA": {
+    "zoneName": "Gabon",
+    "countryKey": "GA",
+    "countryName": "Gabon",
+    "region": "Africa",
+    "timezone": "Africa/Libreville"
+  },
+  "GB-NIR": {
+    "zoneName": "Northern Ireland",
+    "countryKey": "GB",
+    "countryName": "Northern Ireland",
+    "region": "Europe",
+    "timezone": "Europe/London"
+  },
+  "GB-ZET": {
+    "zoneName": "Shetland Islands",
+    "countryKey": "GB",
+    "countryName": "Great Britain",
+    "region": "Europe",
+    "timezone": "Europe/London"
+  },
+  "GB": {
+    "zoneName": "Great Britain",
+    "countryKey": "GB",
+    "countryName": "Great Britain",
+    "region": "Europe",
+    "timezone": "Europe/London"
+  },
+  "GE": {
+    "zoneName": "Georgia",
+    "countryKey": "GE",
+    "countryName": "Georgia",
+    "region": "Asia",
+    "timezone": "Asia/Tbilisi"
+  },
+  "GF": {
+    "zoneName": "French Guiana",
+    "countryKey": "GF",
+    "countryName": "French Guiana",
+    "region": "Americas",
+    "timezone": "Europe/Paris"
+  },
+  "GG": {
+    "zoneName": "Guernsey",
+    "countryKey": "GG",
+    "countryName": "Guernsey",
+    "region": "Europe",
+    "timezone": "Europe/Guernsey"
+  },
+  "GH": {
+    "zoneName": "Ghana",
+    "countryKey": "GH",
+    "countryName": "Ghana",
+    "region": "Africa",
+    "timezone": "Africa/Accra"
+  },
+  "GI": {
+    "zoneName": "Gibraltar",
+    "countryKey": "GI",
+    "countryName": "Gibraltar",
+    "region": "Europe",
+    "timezone": "Europe/Gibraltar"
+  },
+  "GL": {
+    "zoneName": "Greenland",
+    "countryKey": "GL",
+    "countryName": "Greenland",
+    "region": "Americas",
+    "timezone": "America/Nuuk"
+  },
+  "GM": {
+    "zoneName": "Gambia",
+    "countryKey": "GM",
+    "countryName": "Gambia",
+    "region": "Africa",
+    "timezone": "Africa/Banjul"
+  },
+  "GN": {
+    "zoneName": "Guinea",
+    "countryKey": "GN",
+    "countryName": "Guinea",
+    "region": "Africa",
+    "timezone": "Africa/Conakry"
+  },
+  "GP": {
+    "zoneName": "Guadeloupe",
+    "countryKey": "GP",
+    "countryName": "Guadeloupe",
+    "region": "Americas",
+    "timezone": "America/Puerto_Rico"
+  },
+  "GQ": {
+    "zoneName": "Equatorial Guinea",
+    "countryKey": "GQ",
+    "countryName": "Equatorial Guinea",
+    "region": "Africa",
+    "timezone": "Africa/Malabo"
+  },
+  "GR": {
+    "zoneName": "Greece",
+    "countryKey": "GR",
+    "countryName": "Greece",
+    "region": "Europe",
+    "timezone": "Europe/Athens"
+  },
+  "GS": {
+    "zoneName": "South Georgia and the South Sandwich Islands",
+    "countryKey": "GS",
+    "countryName": "South Georgia and the South Sandwich Islands",
+    "region": "Americas",
+    "timezone": "Atlantic/South_Georgia"
+  },
+  "GT": {
+    "zoneName": "Guatemala",
+    "countryKey": "GT",
+    "countryName": "Guatemala",
+    "region": "Americas",
+    "timezone": "America/Guatemala"
+  },
+  "GU": {
+    "zoneName": "Guam",
+    "countryKey": "GU",
+    "countryName": "Guam",
+    "region": "Oceania",
+    "timezone": "Pacific/Guam"
+  },
+  "GW": {
+    "zoneName": "Guinea-Bissau",
+    "countryKey": "GW",
+    "countryName": "Guinea-Bissau",
+    "region": "Africa",
+    "timezone": "Africa/Bissau"
+  },
+  "GY": {
+    "zoneName": "Guyana",
+    "countryKey": "GY",
+    "countryName": "Guyana",
+    "region": "Americas",
+    "timezone": "America/Guyana"
+  },
+  "HK": {
+    "zoneName": "Hong Kong",
+    "countryKey": "HK",
+    "countryName": "Hong Kong",
+    "region": "Asia",
+    "timezone": "Asia/Hong_Kong"
+  },
+  "HM": {
+    "zoneName": "Heard Island and McDonald Islands",
+    "countryKey": "HM",
+    "countryName": "Heard Island and McDonald Islands",
+    "region": "Oceania",
+    "timezone": "Asia/Karachi"
+  },
+  "HN": {
+    "zoneName": "Honduras",
+    "countryKey": "HN",
+    "countryName": "Honduras",
+    "region": "Americas",
+    "timezone": "America/Tegucigalpa"
+  },
+  "HR": {
+    "zoneName": "Croatia",
+    "countryKey": "HR",
+    "countryName": "Croatia",
+    "region": "Europe",
+    "timezone": "Europe/Belgrade"
+  },
+  "HT": {
+    "zoneName": "Haiti",
+    "countryKey": "HT",
+    "countryName": "Haiti",
+    "region": "Americas",
+    "timezone": "America/Port-au-Prince"
+  },
+  "HU": {
+    "zoneName": "Hungary",
+    "countryKey": "HU",
+    "countryName": "Hungary",
+    "region": "Europe",
+    "timezone": "Europe/Budapest"
+  },
+  "ID": {
+    "zoneName": "Indonesia",
+    "countryKey": "ID",
+    "countryName": "Indonesia",
+    "region": "Asia",
+    "timezone": "Asia/Jakarta"
+  },
+  "IE": {
+    "zoneName": "Ireland",
+    "countryKey": "IE",
+    "countryName": "Ireland",
+    "region": "Europe",
+    "timezone": "Europe/Dublin"
+  },
+  "IL": {
+    "zoneName": "Israel",
+    "countryKey": "IL",
+    "countryName": "Israel",
+    "region": "Asia",
+    "timezone": "Asia/Jerusalem"
+  },
+  "IM": {
+    "zoneName": "Isle of Man",
+    "countryKey": "IM",
+    "countryName": "Isle of Man",
+    "region": "Europe",
+    "timezone": "Europe/Isle_of_Man"
+  },
+  "IN-AN": {
+    "zoneName": "Andaman and Nicobar Islands",
+    "countryKey": "IN",
+    "countryName": "India",
+    "region": "Asia",
+    "timezone": "Asia/Kolkata"
+  },
+  "IN-EA": {
+    "zoneName": "Eastern India",
+    "countryKey": "IN",
+    "countryName": "India",
+    "region": "Asia",
+    "timezone": "Asia/Kolkata"
+  },
+  "IN-NE": {
+    "zoneName": "North Eastern India",
+    "countryKey": "IN",
+    "countryName": "India",
+    "region": "Asia",
+    "timezone": "Asia/Kolkata"
+  },
+  "IN-NO": {
+    "zoneName": "Northern India",
+    "countryKey": "IN",
+    "countryName": "India",
+    "region": "Asia",
+    "timezone": "Asia/Kolkata"
+  },
+  "IN-SO": {
+    "zoneName": "Southern India",
+    "countryKey": "IN",
+    "countryName": "India",
+    "region": "Asia",
+    "timezone": "Asia/Kolkata"
+  },
+  "IN-WE": {
+    "zoneName": "Western India",
+    "countryKey": "IN",
+    "countryName": "India",
+    "region": "Asia",
+    "timezone": "Asia/Kolkata"
+  },
+  "IN": {
+    "zoneName": "Mainland India",
+    "countryKey": "IN",
+    "countryName": "India",
+    "region": "Asia",
+    "timezone": "Asia/Kolkata"
+  },
+  "IQ": {
+    "zoneName": "Iraq",
+    "countryKey": "IQ",
+    "countryName": "Iraq",
+    "region": "Asia",
+    "timezone": "Asia/Baghdad"
+  },
+  "IR": {
+    "zoneName": "Iran",
+    "countryKey": "IR",
+    "countryName": "Iran",
+    "region": "Asia",
+    "timezone": "Asia/Tehran"
+  },
+  "IS": {
+    "zoneName": "Iceland",
+    "countryKey": "IS",
+    "countryName": "Iceland",
+    "region": "Europe",
+    "timezone": "Atlantic/Reykjavik"
+  },
+  "IT-CNO": {
+    "zoneName": "Central North Italy",
+    "countryKey": "IT",
+    "countryName": "Italy",
+    "region": "Europe",
+    "timezone": "Europe/Rome"
+  },
+  "IT-CSO": {
+    "zoneName": "Central South Italy",
+    "countryKey": "IT",
+    "countryName": "Italy",
+    "region": "Europe",
+    "timezone": "Europe/Rome"
+  },
+  "IT-NO": {
+    "zoneName": "North Italy",
+    "countryKey": "IT",
+    "countryName": "Italy",
+    "region": "Europe",
+    "timezone": "Europe/Rome"
+  },
+  "IT-SAR": {
+    "zoneName": "Sardinia",
+    "countryKey": "IT",
+    "countryName": "Italy",
+    "region": "Europe",
+    "timezone": "Europe/Rome"
+  },
+  "IT-SIC": {
+    "zoneName": "Sicily",
+    "countryKey": "IT",
+    "countryName": "Italy",
+    "region": "Europe",
+    "timezone": "Europe/Rome"
+  },
+  "IT-SO": {
+    "zoneName": "South Italy",
+    "countryKey": "IT",
+    "countryName": "Italy",
+    "region": "Europe",
+    "timezone": "Europe/Rome"
+  },
+  "IT": {
+    "zoneName": "Italy",
+    "countryKey": "IT",
+    "countryName": "Italy",
+    "region": "Europe",
+    "timezone": "Europe/Rome"
+  },
+  "JE": {
+    "zoneName": "Jersey",
+    "countryKey": "JE",
+    "countryName": "Jersey",
+    "region": "Europe",
+    "timezone": "Europe/Jersey"
+  },
+  "JM": {
+    "zoneName": "Jamaica",
+    "countryKey": "JM",
+    "countryName": "Jamaica",
+    "region": "Americas",
+    "timezone": "America/Jamaica"
+  },
+  "JO": {
+    "zoneName": "Jordan",
+    "countryKey": "JO",
+    "countryName": "Jordan",
+    "region": "Asia",
+    "timezone": "Asia/Amman"
+  },
+  "JP-CB": {
+    "zoneName": "Chūbu",
+    "countryKey": "JP",
+    "countryName": "Japan",
+    "region": "Asia",
+    "timezone": "Asia/Tokyo"
+  },
+  "JP-CG": {
+    "zoneName": "Chūgoku",
+    "countryKey": "JP",
+    "countryName": "Japan",
+    "region": "Asia",
+    "timezone": "Asia/Tokyo"
+  },
+  "JP-HKD": {
+    "zoneName": "Hokkaidō",
+    "countryKey": "JP",
+    "countryName": "Japan",
+    "region": "Asia",
+    "timezone": "Asia/Tokyo"
+  },
+  "JP-HR": {
+    "zoneName": "Hokuriku",
+    "countryKey": "JP",
+    "countryName": "Japan",
+    "region": "Asia",
+    "timezone": "Asia/Tokyo"
+  },
+  "JP-KN": {
+    "zoneName": "Kansai",
+    "countryKey": "JP",
+    "countryName": "Japan",
+    "region": "Asia",
+    "timezone": "Asia/Tokyo"
+  },
+  "JP-KY": {
+    "zoneName": "Kyūshū",
+    "countryKey": "JP",
+    "countryName": "Japan",
+    "region": "Asia",
+    "timezone": "Asia/Tokyo"
+  },
+  "JP-ON": {
+    "zoneName": "Okinawa",
+    "countryKey": "JP",
+    "countryName": "Japan",
+    "region": "Asia",
+    "timezone": "Asia/Tokyo"
+  },
+  "JP-SK": {
+    "zoneName": "Shikoku",
+    "countryKey": "JP",
+    "countryName": "Japan",
+    "region": "Asia",
+    "timezone": "Asia/Tokyo"
+  },
+  "JP-TH": {
+    "zoneName": "Tōhoku",
+    "countryKey": "JP",
+    "countryName": "Japan",
+    "region": "Asia",
+    "timezone": "Asia/Tokyo"
+  },
+  "JP-TK": {
+    "zoneName": "Tōkyō",
+    "countryKey": "JP",
+    "countryName": "Japan",
+    "region": "Asia",
+    "timezone": "Asia/Tokyo"
+  },
+  "JP": {
+    "zoneName": "Japan",
+    "countryKey": "JP",
+    "countryName": "Japan",
+    "region": "Asia",
+    "timezone": "Asia/Tokyo"
+  },
+  "KE": {
+    "zoneName": "Kenya",
+    "countryKey": "KE",
+    "countryName": "Kenya",
+    "region": "Africa",
+    "timezone": "Africa/Nairobi"
+  },
+  "KG": {
+    "zoneName": "Kyrgyzstan",
+    "countryKey": "KG",
+    "countryName": "Kyrgyzstan",
+    "region": "Asia",
+    "timezone": "Asia/Bishkek"
+  },
+  "KH": {
+    "zoneName": "Cambodia",
+    "countryKey": "KH",
+    "countryName": "Cambodia",
+    "region": "Asia",
+    "timezone": "Asia/Phnom_Penh"
+  },
+  "KM": {
+    "zoneName": "Comoros",
+    "countryKey": "KM",
+    "countryName": "Comoros",
+    "region": "Africa",
+    "timezone": "Indian/Comoro"
+  },
+  "KP": {
+    "zoneName": "North Korea",
+    "countryKey": "KP",
+    "countryName": "North Korea",
+    "region": "Asia",
+    "timezone": "Asia/Pyongyang"
+  },
+  "KR": {
+    "zoneName": "South Korea",
+    "countryKey": "KR",
+    "countryName": "South Korea",
+    "region": "Asia",
+    "timezone": "Asia/Seoul"
+  },
+  "KW": {
+    "zoneName": "Kuwait",
+    "countryKey": "KW",
+    "countryName": "Kuwait",
+    "region": "Asia",
+    "timezone": "Asia/Kuwait"
+  },
+  "KY": {
+    "zoneName": "Cayman Islands",
+    "countryKey": "KY",
+    "countryName": "Cayman Islands",
+    "region": "Americas",
+    "timezone": "America/Cayman"
+  },
+  "KZ": {
+    "zoneName": "Kazakhstan",
+    "countryKey": "KZ",
+    "countryName": "Kazakhstan",
+    "region": "Asia",
+    "timezone": "Asia/Almaty"
+  },
+  "LA": {
+    "zoneName": "Laos",
+    "countryKey": "LA",
+    "countryName": "Laos",
+    "region": "Asia",
+    "timezone": "Asia/Vientiane"
+  },
+  "LB": {
+    "zoneName": "Lebanon",
+    "countryKey": "LB",
+    "countryName": "Lebanon",
+    "region": "Asia",
+    "timezone": "Asia/Beirut"
+  },
+  "LC": {
+    "zoneName": "Saint Lucia",
+    "countryKey": "LC",
+    "countryName": "Saint Lucia",
+    "region": "Americas",
+    "timezone": "America/St_Lucia"
+  },
+  "LI": {
+    "zoneName": "Liechtenstein",
+    "countryKey": "LI",
+    "countryName": "Liechtenstein",
+    "region": "Europe",
+    "timezone": "Europe/Vaduz"
+  },
+  "LK": {
+    "zoneName": "Sri Lanka",
+    "countryKey": "LK",
+    "countryName": "Sri Lanka",
+    "region": "Asia",
+    "timezone": "Asia/Colombo"
+  },
+  "LR": {
+    "zoneName": "Liberia",
+    "countryKey": "LR",
+    "countryName": "Liberia",
+    "region": "Africa",
+    "timezone": "Africa/Monrovia"
+  },
+  "LS": {
+    "zoneName": "Lesotho",
+    "countryKey": "LS",
+    "countryName": "Lesotho",
+    "region": "Africa",
+    "timezone": "Africa/Maseru"
+  },
+  "LT": {
+    "zoneName": "Lithuania",
+    "countryKey": "LT",
+    "countryName": "Lithuania",
+    "region": "Europe",
+    "timezone": "Europe/Vilnius"
+  },
+  "LU": {
+    "zoneName": "Luxembourg",
+    "countryKey": "LU",
+    "countryName": "Luxembourg",
+    "region": "Europe",
+    "timezone": "Europe/Brussels"
+  },
+  "LV": {
+    "zoneName": "Latvia",
+    "countryKey": "LV",
+    "countryName": "Latvia",
+    "region": "Europe",
+    "timezone": "Europe/Riga"
+  },
+  "LY": {
+    "zoneName": "Libya",
+    "countryKey": "LY",
+    "countryName": "Libya",
+    "region": "Africa",
+    "timezone": "Africa/Tripoli"
+  },
+  "MA": {
+    "zoneName": "Morocco",
+    "countryKey": "MA",
+    "countryName": "Morocco",
+    "region": "Africa",
+    "timezone": "Africa/Casablanca"
+  },
+  "MC": {
+    "zoneName": "Monaco",
+    "countryKey": "MC",
+    "countryName": "Monaco",
+    "region": "Europe",
+    "timezone": "Europe/Monaco"
+  },
+  "MD": {
+    "zoneName": "Moldova",
+    "countryKey": "MD",
+    "countryName": "Moldova",
+    "region": "Europe",
+    "timezone": "Europe/Chisinau"
+  },
+  "ME": {
+    "zoneName": "Montenegro",
+    "countryKey": "ME",
+    "countryName": "Montenegro",
+    "region": "Europe",
+    "timezone": "Europe/Podgorica"
+  },
+  "MG": {
+    "zoneName": "Madagascar",
+    "countryKey": "MG",
+    "countryName": "Madagascar",
+    "region": "Africa",
+    "timezone": "Indian/Antananarivo"
+  },
+  "MK": {
+    "zoneName": "North Macedonia",
+    "countryKey": "MK",
+    "countryName": "North Macedonia",
+    "region": "Europe",
+    "timezone": "Europe/Skopje"
+  },
+  "ML": {
+    "zoneName": "Mali",
+    "countryKey": "ML",
+    "countryName": "Mali",
+    "region": "Africa",
+    "timezone": "Africa/Bamako"
+  },
+  "MM": {
+    "zoneName": "Myanmar",
+    "countryKey": "MM",
+    "countryName": "Myanmar",
+    "region": "Asia",
+    "timezone": "Asia/Yangon"
+  },
+  "MN": {
+    "zoneName": "Mongolia",
+    "countryKey": "MN",
+    "countryName": "Mongolia",
+    "region": "Asia",
+    "timezone": "Asia/Ulaanbaatar"
+  },
+  "MO": {
+    "zoneName": "Macao",
+    "countryKey": "MO",
+    "countryName": "Macao",
+    "region": "Asia",
+    "timezone": "Asia/Macau"
+  },
+  "MQ": {
+    "zoneName": "Martinique",
+    "countryKey": "MQ",
+    "countryName": "Martinique",
+    "region": "Americas",
+    "timezone": "Europe/Paris"
+  },
+  "MR": {
+    "zoneName": "Mauritania",
+    "countryKey": "MR",
+    "countryName": "Mauritania",
+    "region": "Africa",
+    "timezone": "Africa/Nouakchott"
+  },
+  "MT": {
+    "zoneName": "Malta",
+    "countryKey": "MT",
+    "countryName": "Malta",
+    "region": "Europe",
+    "timezone": "Europe/Malta"
+  },
+  "MU": {
+    "zoneName": "Mauritius",
+    "countryKey": "MU",
+    "countryName": "Mauritius",
+    "region": "Africa",
+    "timezone": "Indian/Mauritius"
+  },
+  "MV": {
+    "zoneName": "Maldives",
+    "countryKey": "MV",
+    "countryName": "Maldives",
+    "region": "Asia",
+    "timezone": "Indian/Maldives"
+  },
+  "MW": {
+    "zoneName": "Malawi",
+    "countryKey": "MW",
+    "countryName": "Malawi",
+    "region": "Africa",
+    "timezone": "Africa/Blantyre"
+  },
+  "MX": {
+    "zoneName": "Mexico",
+    "countryKey": "MX",
+    "countryName": "Mexico",
+    "region": "Americas",
+    "timezone": "America/Mexico_City"
+  },
+  "MY-EM": {
+    "zoneName": "Borneo",
+    "countryKey": "MY",
+    "countryName": "Malaysia",
+    "region": "Asia",
+    "timezone": "Asia/Kuala_Lumpur"
+  },
+  "MY-WM": {
+    "zoneName": "Peninsula",
+    "countryKey": "MY",
+    "countryName": "Malaysia",
+    "region": "Asia",
+    "timezone": "Asia/Kuala_Lumpur"
+  },
+  "MY": {
+    "zoneName": "Malaysia",
+    "countryKey": "MY",
+    "countryName": "Malaysia",
+    "region": "Asia",
+    "timezone": "Asia/Kuala_Lumpur"
+  },
+  "MZ": {
+    "zoneName": "Mozambique",
+    "countryKey": "MZ",
+    "countryName": "Mozambique",
+    "region": "Africa",
+    "timezone": "Africa/Maputo"
+  },
+  "NA": {
+    "zoneName": "Namibia",
+    "countryKey": "NA",
+    "countryName": "Namibia",
+    "region": "Africa",
+    "timezone": "Africa/Windhoek"
+  },
+  "NC": {
+    "zoneName": "New Caledonia",
+    "countryKey": "NC",
+    "countryName": "New Caledonia",
+    "region": "Oceania",
+    "timezone": "Pacific/Noumea"
+  },
+  "NE": {
+    "zoneName": "Niger",
+    "countryKey": "NE",
+    "countryName": "Niger",
+    "region": "Africa",
+    "timezone": "Africa/Niamey"
+  },
+  "NG": {
+    "zoneName": "Nigeria",
+    "countryKey": "NG",
+    "countryName": "Nigeria",
+    "region": "Africa",
+    "timezone": "Africa/Lagos"
+  },
+  "NI": {
+    "zoneName": "Nicaragua",
+    "countryKey": "NI",
+    "countryName": "Nicaragua",
+    "region": "Americas",
+    "timezone": "America/Managua"
+  },
+  "NL": {
+    "zoneName": "Netherlands",
+    "countryKey": "NL",
+    "countryName": "Netherlands",
+    "region": "Europe",
+    "timezone": "Europe/Amsterdam"
+  },
+  "NO-NO1": {
+    "zoneName": "Eastern Norway",
+    "countryKey": "NO",
+    "countryName": "Norway",
+    "region": "Europe",
+    "timezone": "Europe/Oslo"
+  },
+  "NO-NO2": {
+    "zoneName": "Southern Norway",
+    "countryKey": "NO",
+    "countryName": "Norway",
+    "region": "Europe",
+    "timezone": "Europe/Oslo"
+  },
+  "NO-NO3": {
+    "zoneName": "Central Norway",
+    "countryKey": "NO",
+    "countryName": "Norway",
+    "region": "Europe",
+    "timezone": "Europe/Oslo"
+  },
+  "NO-NO4": {
+    "zoneName": "Northern Norway",
+    "countryKey": "NO",
+    "countryName": "Norway",
+    "region": "Europe",
+    "timezone": "Europe/Oslo"
+  },
+  "NO-NO5": {
+    "zoneName": "Western Norway",
+    "countryKey": "NO",
+    "countryName": "Norway",
+    "region": "Europe",
+    "timezone": "Europe/Oslo"
+  },
+  "NO": {
+    "zoneName": "Norway",
+    "countryKey": "NO",
+    "countryName": "Norway",
+    "region": "Europe",
+    "timezone": "Europe/Oslo"
+  },
+  "NP": {
+    "zoneName": "Nepal",
+    "countryKey": "NP",
+    "countryName": "Nepal",
+    "region": "Asia",
+    "timezone": "Asia/Kathmandu"
+  },
+  "NZ-NZA": {
+    "zoneName": "Auckland Islands",
+    "countryKey": "NZ",
+    "countryName": "New Zealand",
+    "region": "Oceania",
+    "timezone": "Pacific/Auckland"
+  },
+  "NZ-NZC": {
+    "zoneName": "Chatham Islands",
+    "countryKey": "NZ",
+    "countryName": "New Zealand",
+    "region": "Oceania",
+    "timezone": "Pacific/Auckland"
+  },
+  "NZ-NZST": {
+    "zoneName": "Stewart Island",
+    "countryKey": "NZ",
+    "countryName": "New Zealand",
+    "region": "Oceania",
+    "timezone": "Pacific/Auckland"
+  },
+  "NZ": {
+    "zoneName": "New Zealand",
+    "countryKey": "NZ",
+    "countryName": "New Zealand",
+    "region": "Oceania",
+    "timezone": "Pacific/Auckland"
+  },
+  "OM": {
+    "zoneName": "Oman",
+    "countryKey": "OM",
+    "countryName": "Oman",
+    "region": "Asia",
+    "timezone": "Asia/Muscat"
+  },
+  "PA": {
+    "zoneName": "Panama",
+    "countryKey": "PA",
+    "countryName": "Panama",
+    "region": "Americas",
+    "timezone": "America/Panama"
+  },
+  "PE": {
+    "zoneName": "Peru",
+    "countryKey": "PE",
+    "countryName": "Peru",
+    "region": "Americas",
+    "timezone": "America/Lima"
+  },
+  "PF": {
+    "zoneName": "French Polynesia",
+    "countryKey": "PF",
+    "countryName": "French Polynesia",
+    "region": "Oceania",
+    "timezone": "Pacific/Tahiti"
+  },
+  "PG": {
+    "zoneName": "Papua New Guinea",
+    "countryKey": "PG",
+    "countryName": "Papua New Guinea",
+    "region": "Oceania",
+    "timezone": "Pacific/Port_Moresby"
+  },
+  "PH-LU": {
+    "zoneName": "Luzon",
+    "countryKey": "PH",
+    "countryName": "Philippines",
+    "region": "Asia",
+    "timezone": "Asia/Manila"
+  },
+  "PH-MI": {
+    "zoneName": "Mindanao",
+    "countryKey": "PH",
+    "countryName": "Philippines",
+    "region": "Asia",
+    "timezone": "Asia/Manila"
+  },
+  "PH-VI": {
+    "zoneName": "Visayas",
+    "countryKey": "PH",
+    "countryName": "Philippines",
+    "region": "Asia",
+    "timezone": "Asia/Manila"
+  },
+  "PH": {
+    "zoneName": "Philippines",
+    "countryKey": "PH",
+    "countryName": "Philippines",
+    "region": "Asia",
+    "timezone": "Asia/Manila"
+  },
+  "PK": {
+    "zoneName": "Pakistan",
+    "countryKey": "PK",
+    "countryName": "Pakistan",
+    "region": "Asia",
+    "timezone": "Asia/Karachi"
+  },
+  "PL": {
+    "zoneName": "Poland",
+    "countryKey": "PL",
+    "countryName": "Poland",
+    "region": "Europe",
+    "timezone": "Europe/Warsaw"
+  },
+  "PM": {
+    "zoneName": "Saint Pierre and Miquelon",
+    "countryKey": "PM",
+    "countryName": "Saint Pierre and Miquelon",
+    "region": "Americas",
+    "timezone": "America/Miquelon"
+  },
+  "PR": {
+    "zoneName": "Puerto Rico",
+    "countryKey": "PR",
+    "countryName": "Puerto Rico",
+    "region": "Americas",
+    "timezone": "America/Puerto_Rico"
+  },
+  "PS": {
+    "zoneName": "State of Palestine",
+    "countryKey": "PS",
+    "countryName": "State of Palestine",
+    "region": "Asia",
+    "timezone": "Asia/Gaza"
+  },
+  "PT-AC": {
+    "zoneName": "Azores",
+    "countryKey": "PT",
+    "countryName": "Portugal",
+    "region": "Europe",
+    "timezone": "Atlantic/Azores"
+  },
+  "PT-MA": {
+    "zoneName": "Madeira",
+    "countryKey": "PT",
+    "countryName": "Portugal",
+    "region": "Europe",
+    "timezone": "Atlantic/Madeira"
+  },
+  "PT": {
+    "zoneName": "Portugal",
+    "countryKey": "PT",
+    "countryName": "Portugal",
+    "region": "Europe",
+    "timezone": "Europe/Lisbon"
+  },
+  "PW": {
+    "zoneName": "Palau",
+    "countryKey": "PW",
+    "countryName": "Palau",
+    "region": "Oceania",
+    "timezone": "Pacific/Palau"
+  },
+  "PY": {
+    "zoneName": "Paraguay",
+    "countryKey": "PY",
+    "countryName": "Paraguay",
+    "region": "Americas",
+    "timezone": "America/Asuncion"
+  },
+  "QA": {
+    "zoneName": "Qatar",
+    "countryKey": "QA",
+    "countryName": "Qatar",
+    "region": "Asia",
+    "timezone": "Asia/Qatar"
+  },
+  "RE": {
+    "zoneName": "Réunion",
+    "countryKey": "RE",
+    "countryName": "Réunion",
+    "region": "Africa",
+    "timezone": "Indian/Reunion"
+  },
+  "RO": {
+    "zoneName": "Romania",
+    "countryKey": "RO",
+    "countryName": "Romania",
+    "region": "Europe",
+    "timezone": "Europe/Bucharest"
+  },
+  "RS": {
+    "zoneName": "Serbia",
+    "countryKey": "RS",
+    "countryName": "Serbia",
+    "region": "Europe",
+    "timezone": "Europe/Belgrade"
+  },
+  "RU-1": {
+    "zoneName": "Europe-Ural",
+    "countryKey": "RU",
+    "countryName": "Russia",
+    "region": "Europe",
+    "timezone": "Europe/Moscow"
+  },
+  "RU-2": {
+    "zoneName": "Siberia",
+    "countryKey": "RU",
+    "countryName": "Russia",
+    "region": "Europe",
+    "timezone": "Europe/Moscow"
+  },
+  "RU-AS": {
+    "zoneName": "East",
+    "countryKey": "RU",
+    "countryName": "Russia",
+    "region": "Europe",
+    "timezone": "Europe/Moscow"
+  },
+  "RU-EU": {
+    "zoneName": "Arctic",
+    "countryKey": "RU",
+    "countryName": "Russia",
+    "region": "Europe",
+    "timezone": "Europe/Moscow"
+  },
+  "RU-FE": {
+    "zoneName": "Far East",
+    "countryKey": "RU",
+    "countryName": "Russia",
+    "region": "Europe",
+    "timezone": "Asia/Kamchatka"
+  },
+  "RU-KGD": {
+    "zoneName": "Kaliningrad",
+    "countryKey": "RU",
+    "countryName": "Russia",
+    "region": "Europe",
+    "timezone": "Europe/Kaliningrad"
+  },
+  "RU": {
+    "zoneName": "Russia",
+    "countryKey": "RU",
+    "countryName": "Russia",
+    "region": "Europe",
+    "timezone": "Europe/Moscow"
+  },
+  "RW": {
+    "zoneName": "Rwanda",
+    "countryKey": "RW",
+    "countryName": "Rwanda",
+    "region": "Africa",
+    "timezone": "Africa/Kigali"
+  },
+  "SA": {
+    "zoneName": "Saudi Arabia",
+    "countryKey": "SA",
+    "countryName": "Saudi Arabia",
+    "region": "Asia",
+    "timezone": "Asia/Riyadh"
+  },
+  "SB": {
+    "zoneName": "Solomon Islands",
+    "countryKey": "SB",
+    "countryName": "Solomon Islands",
+    "region": "Oceania",
+    "timezone": "Pacific/Guadalcanal"
+  },
+  "SC": {
+    "zoneName": "Seychelles",
+    "countryKey": "SC",
+    "countryName": "Seychelles",
+    "region": "Africa",
+    "timezone": "Indian/Mahe"
+  },
+  "SD": {
+    "zoneName": "Sudan",
+    "countryKey": "SD",
+    "countryName": "Sudan",
+    "region": "Africa",
+    "timezone": "Africa/Khartoum"
+  },
+  "SE-SE1": {
+    "zoneName": "North Sweden",
+    "countryKey": "SE",
+    "countryName": "Sweden",
+    "region": "Europe",
+    "timezone": "Europe/Stockholm"
+  },
+  "SE-SE2": {
+    "zoneName": "North Central Sweden",
+    "countryKey": "SE",
+    "countryName": "Sweden",
+    "region": "Europe",
+    "timezone": "Europe/Stockholm"
+  },
+  "SE-SE3": {
+    "zoneName": "South Central Sweden",
+    "countryKey": "SE",
+    "countryName": "Sweden",
+    "region": "Europe",
+    "timezone": "Europe/Stockholm"
+  },
+  "SE-SE4": {
+    "zoneName": "South Sweden",
+    "countryKey": "SE",
+    "countryName": "Sweden",
+    "region": "Europe",
+    "timezone": "Europe/Stockholm"
+  },
+  "SE": {
+    "zoneName": "Sweden",
+    "countryKey": "SE",
+    "countryName": "Sweden",
+    "region": "Europe",
+    "timezone": "Europe/Stockholm"
+  },
+  "SG": {
+    "zoneName": "Singapore",
+    "countryKey": "SG",
+    "countryName": "Singapore",
+    "region": "Asia",
+    "timezone": "Asia/Singapore"
+  },
+  "SI": {
+    "zoneName": "Slovenia",
+    "countryKey": "SI",
+    "countryName": "Slovenia",
+    "region": "Europe",
+    "timezone": "Europe/Ljubljana"
+  },
+  "SJ": {
+    "zoneName": "Svalbard and Jan Mayen",
+    "countryKey": "SJ",
+    "countryName": "Svalbard and Jan Mayen",
+    "region": "Europe",
+    "timezone": "Arctic/Longyearbyen"
+  },
+  "SK": {
+    "zoneName": "Slovakia",
+    "countryKey": "SK",
+    "countryName": "Slovakia",
+    "region": "Europe",
+    "timezone": "Europe/Bratislava"
+  },
+  "SL": {
+    "zoneName": "Sierra Leone",
+    "countryKey": "SL",
+    "countryName": "Sierra Leone",
+    "region": "Africa",
+    "timezone": "Africa/Freetown"
+  },
+  "SN": {
+    "zoneName": "Senegal",
+    "countryKey": "SN",
+    "countryName": "Senegal",
+    "region": "Africa",
+    "timezone": "Africa/Dakar"
+  },
+  "SO": {
+    "zoneName": "Somalia",
+    "countryKey": "SO",
+    "countryName": "Somalia",
+    "region": "Africa",
+    "timezone": "Africa/Mogadishu"
+  },
+  "SR": {
+    "zoneName": "Suriname",
+    "countryKey": "SR",
+    "countryName": "Suriname",
+    "region": "Americas",
+    "timezone": "America/Paramaribo"
+  },
+  "SS": {
+    "zoneName": "South Sudan",
+    "countryKey": "SS",
+    "countryName": "South Sudan",
+    "region": "Africa",
+    "timezone": "Africa/Juba"
+  },
+  "ST": {
+    "zoneName": "São Tomé and Príncipe",
+    "countryKey": "ST",
+    "countryName": "São Tomé and Príncipe",
+    "region": "Africa",
+    "timezone": "Africa/Sao_Tome"
+  },
+  "SV": {
+    "zoneName": "El Salvador",
+    "countryKey": "SV",
+    "countryName": "El Salvador",
+    "region": "Americas",
+    "timezone": "America/El_Salvador"
+  },
+  "SY": {
+    "zoneName": "Syria",
+    "countryKey": "SY",
+    "countryName": "Syria",
+    "region": "Asia",
+    "timezone": "Asia/Damascus"
+  },
+  "SZ": {
+    "zoneName": "Eswatini",
+    "countryKey": "SZ",
+    "countryName": "Eswatini",
+    "region": "Africa",
+    "timezone": "Africa/Mbabane"
+  },
+  "TD": {
+    "zoneName": "Chad",
+    "countryKey": "TD",
+    "countryName": "Chad",
+    "region": "Africa",
+    "timezone": "Africa/Ndjamena"
+  },
+  "TF": {
+    "zoneName": "French Southern Territories",
+    "countryKey": "TF",
+    "countryName": "French Southern Territories",
+    "region": "Africa",
+    "timezone": "Indian/Kerguelen"
+  },
+  "TG": {
+    "zoneName": "Togo",
+    "countryKey": "TG",
+    "countryName": "Togo",
+    "region": "Africa",
+    "timezone": "Africa/Lome"
+  },
+  "TH": {
+    "zoneName": "Thailand",
+    "countryKey": "TH",
+    "countryName": "Thailand",
+    "region": "Asia",
+    "timezone": "Asia/Bangkok"
+  },
+  "TJ": {
+    "zoneName": "Tajikistan",
+    "countryKey": "TJ",
+    "countryName": "Tajikistan",
+    "region": "Asia",
+    "timezone": "Asia/Dushanbe"
+  },
+  "TL": {
+    "zoneName": "Timor-Leste",
+    "countryKey": "TL",
+    "countryName": "Timor-Leste",
+    "region": "Asia",
+    "timezone": "Asia/Dili"
+  },
+  "TM": {
+    "zoneName": "Turkmenistan",
+    "countryKey": "TM",
+    "countryName": "Turkmenistan",
+    "region": "Asia",
+    "timezone": "Asia/Ashgabat"
+  },
+  "TN": {
+    "zoneName": "Tunisia",
+    "countryKey": "TN",
+    "countryName": "Tunisia",
+    "region": "Africa",
+    "timezone": "Africa/Tunis"
+  },
+  "TO": {
+    "zoneName": "Tonga",
+    "countryKey": "TO",
+    "countryName": "Tonga",
+    "region": "Oceania",
+    "timezone": "Pacific/Tongatapu"
+  },
+  "TR": {
+    "zoneName": "Turkey",
+    "countryKey": "TR",
+    "countryName": "Turkey",
+    "region": "Asia",
+    "timezone": "Europe/Istanbul"
+  },
+  "TT": {
+    "zoneName": "Trinidad and Tobago",
+    "countryKey": "TT",
+    "countryName": "Trinidad and Tobago",
+    "region": "Americas",
+    "timezone": "America/Port_of_Spain"
+  },
+  "TW": {
+    "zoneName": "Taiwan",
+    "countryKey": "TW",
+    "countryName": "Taiwan",
+    "region": "Asia",
+    "timezone": "Asia/Taipei"
+  },
+  "TZ": {
+    "zoneName": "Tanzania",
+    "countryKey": "TZ",
+    "countryName": "Tanzania",
+    "region": "Africa",
+    "timezone": "Africa/Dar_es_Salaam"
+  },
+  "UA-CR": {
+    "zoneName": "Crimea",
+    "countryKey": "UA",
+    "countryName": "Ukraine",
+    "region": "Europe",
+    "timezone": "Europe/Kiev"
+  },
+  "UA": {
+    "zoneName": "Ukraine",
+    "countryKey": "UA",
+    "countryName": "Ukraine",
+    "region": "Europe",
+    "timezone": "Europe/Kiev"
+  },
+  "UG": {
+    "zoneName": "Uganda",
+    "countryKey": "UG",
+    "countryName": "Uganda",
+    "region": "Africa",
+    "timezone": "Africa/Kampala"
+  },
+  "US-AK-SEAPA": {
+    "zoneName": "Southeast Alaska Power Agency",
+    "countryKey": "US",
+    "countryName": "USA",
+    "region": "Americas",
+    "timezone": "America/Anchorage"
+  },
+  "US-AK": {
+    "zoneName": "Alaska",
+    "countryKey": "US",
+    "countryName": "USA",
+    "region": "Americas",
+    "timezone": "America/Anchorage"
+  },
+  "US-CAL-BANC": {
+    "zoneName": "Balancing Authority of Northern California",
+    "countryKey": "US",
+    "countryName": "USA",
+    "region": "Americas",
+    "timezone": "US/Pacific"
+  },
+  "US-CAL-CISO": {
+    "zoneName": "CAISO",
+    "countryKey": "US",
+    "countryName": "USA",
+    "region": "Americas",
+    "timezone": "US/Pacific"
+  },
+  "US-CAL-IID": {
+    "zoneName": "Imperial Irrigation District",
+    "countryKey": "US",
+    "countryName": "USA",
+    "region": "Americas",
+    "timezone": "US/Pacific"
+  },
+  "US-CAL-LDWP": {
+    "zoneName": "Los Angeles Department of Water and Power",
+    "countryKey": "US",
+    "countryName": "USA",
+    "region": "Americas",
+    "timezone": "US/Pacific"
+  },
+  "US-CAL-TIDC": {
+    "zoneName": "Turlock Irrigation District",
+    "countryKey": "US",
+    "countryName": "USA",
+    "region": "Americas",
+    "timezone": "US/Pacific"
+  },
+  "US-CAR-CPLE": {
+    "zoneName": "Duke Energy Progress East",
+    "countryKey": "US",
+    "countryName": "USA",
+    "region": "Americas",
+    "timezone": "US/Eastern"
+  },
+  "US-CAR-CPLW": {
+    "zoneName": "Duke Energy Progress West",
+    "countryKey": "US",
+    "countryName": "USA",
+    "region": "Americas",
+    "timezone": "US/Eastern"
+  },
+  "US-CAR-DUK": {
+    "zoneName": "Duke Energy Carolinas",
+    "countryKey": "US",
+    "countryName": "USA",
+    "region": "Americas",
+    "timezone": "US/Eastern"
+  },
+  "US-CAR-SC": {
+    "zoneName": "South Carolina Public Service Authority",
+    "countryKey": "US",
+    "countryName": "USA",
+    "region": "Americas",
+    "timezone": "US/Eastern"
+  },
+  "US-CAR-SCEG": {
+    "zoneName": "South Carolina Electric & Gas Company",
+    "countryKey": "US",
+    "countryName": "USA",
+    "region": "Americas",
+    "timezone": "US/Eastern"
+  },
+  "US-CAR-YAD": {
+    "zoneName": "Alcoa Power Generating, Inc. Yadkin Division",
+    "countryKey": "US",
+    "countryName": "USA",
+    "region": "Americas",
+    "timezone": "US/Eastern"
+  },
+  "US-CENT-SPA": {
+    "zoneName": "Southwestern Power Administration",
+    "countryKey": "US",
+    "countryName": "USA",
+    "region": "Americas",
+    "timezone": "US/Central"
+  },
+  "US-CENT-SWPP": {
+    "zoneName": "Southwest Power Pool",
+    "countryKey": "US",
+    "countryName": "USA",
+    "region": "Americas",
+    "timezone": "US/Central"
+  },
+  "US-FLA-FMPP": {
+    "zoneName": "Florida Municipal Power Pool",
+    "countryKey": "US",
+    "countryName": "USA",
+    "region": "Americas",
+    "timezone": "US/Eastern"
+  },
+  "US-FLA-FPC": {
+    "zoneName": "Duke Energy Florida",
+    "countryKey": "US",
+    "countryName": "USA",
+    "region": "Americas",
+    "timezone": "US/Eastern"
+  },
+  "US-FLA-FPL": {
+    "zoneName": "Florida Power and Light Company",
+    "countryKey": "US",
+    "countryName": "USA",
+    "region": "Americas",
+    "timezone": "US/Eastern"
+  },
+  "US-FLA-GVL": {
+    "zoneName": "Gainesville Regional Utilities",
+    "countryKey": "US",
+    "countryName": "USA",
+    "region": "Americas",
+    "timezone": "US/Eastern"
+  },
+  "US-FLA-HST": {
+    "zoneName": "City of Homestead",
+    "countryKey": "US",
+    "countryName": "USA",
+    "region": "Americas",
+    "timezone": "US/Eastern"
+  },
+  "US-FLA-JEA": {
+    "zoneName": "Jacksonville Electric Authority",
+    "countryKey": "US",
+    "countryName": "USA",
+    "region": "Americas",
+    "timezone": "US/Eastern"
+  },
+  "US-FLA-SEC": {
+    "zoneName": "Seminole Electric Cooperative",
+    "countryKey": "US",
+    "countryName": "USA",
+    "region": "Americas",
+    "timezone": "US/Eastern"
+  },
+  "US-FLA-TAL": {
+    "zoneName": "City of Tallahassee",
+    "countryKey": "US",
+    "countryName": "USA",
+    "region": "Americas",
+    "timezone": "US/Eastern"
+  },
+  "US-FLA-TEC": {
+    "zoneName": "Tampa Electric Company",
+    "countryKey": "US",
+    "countryName": "USA",
+    "region": "Americas",
+    "timezone": "US/Eastern"
+  },
+  "US-HI": {
+    "zoneName": "Hawaii",
+    "countryKey": "US",
+    "countryName": "USA",
+    "region": "Americas",
+    "timezone": "Pacific/Honolulu"
+  },
+  "US-MIDA-PJM": {
+    "zoneName": "PJM Interconnection",
+    "countryKey": "US",
+    "countryName": "USA",
+    "region": "Americas",
+    "timezone": "America/New_York"
+  },
+  "US-MIDW-AECI": {
+    "zoneName": "Associated Electric Cooperative",
+    "countryKey": "US",
+    "countryName": "USA",
+    "region": "Americas",
+    "timezone": "US/Central"
+  },
+  "US-MIDW-LGEE": {
+    "zoneName": "Louisville Gas and Electric Company and Kentucky Utilities",
+    "countryKey": "US",
+    "countryName": "USA",
+    "region": "Americas",
+    "timezone": "US/Central"
+  },
+  "US-MIDW-MISO": {
+    "zoneName": "Midcontinent ISO",
+    "countryKey": "US",
+    "countryName": "USA",
+    "region": "Americas",
+    "timezone": "US/Central"
+  },
+  "US-NE-ISNE": {
+    "zoneName": "ISO New England",
+    "countryKey": "US",
+    "countryName": "USA",
+    "region": "Americas",
+    "timezone": "US/Eastern"
+  },
+  "US-NW-AVA": {
+    "zoneName": "Avista Corporation",
+    "countryKey": "US",
+    "countryName": "USA",
+    "region": "Americas",
+    "timezone": "US/Pacific"
+  },
+  "US-NW-BPAT": {
+    "zoneName": "Bonneville Power Administration",
+    "countryKey": "US",
+    "countryName": "USA",
+    "region": "Americas",
+    "timezone": "US/Pacific"
+  },
+  "US-NW-CHPD": {
+    "zoneName": "Chelan County",
+    "countryKey": "US",
+    "countryName": "USA",
+    "region": "Americas",
+    "timezone": "US/Pacific"
+  },
+  "US-NW-DOPD": {
+    "zoneName": "Douglas County",
+    "countryKey": "US",
+    "countryName": "USA",
+    "region": "Americas",
+    "timezone": "US/Pacific"
+  },
+  "US-NW-GCPD": {
+    "zoneName": "Grant County",
+    "countryKey": "US",
+    "countryName": "USA",
+    "region": "Americas",
+    "timezone": "US/Pacific"
+  },
+  "US-NW-GRID": {
+    "zoneName": "Gridforce Energy Management",
+    "countryKey": "US",
+    "countryName": "USA",
+    "region": "Americas",
+    "timezone": "US/Pacific"
+  },
+  "US-NW-IPCO": {
+    "zoneName": "Idaho Power Company",
+    "countryKey": "US",
+    "countryName": "USA",
+    "region": "Americas",
+    "timezone": "US/Mountain"
+  },
+  "US-NW-NEVP": {
+    "zoneName": "Nevada Power Company",
+    "countryKey": "US",
+    "countryName": "USA",
+    "region": "Americas",
+    "timezone": "US/Pacific"
+  },
+  "US-NW-NWMT": {
+    "zoneName": "Northwestern Energy",
+    "countryKey": "US",
+    "countryName": "USA",
+    "region": "Americas",
+    "timezone": "US/Mountain"
+  },
+  "US-NW-PACE": {
+    "zoneName": "Pacificorp East",
+    "countryKey": "US",
+    "countryName": "USA",
+    "region": "Americas",
+    "timezone": "US/Mountain"
+  },
+  "US-NW-PACW": {
+    "zoneName": "Pacificorp West",
+    "countryKey": "US",
+    "countryName": "USA",
+    "region": "Americas",
+    "timezone": "US/Pacific"
+  },
+  "US-NW-PGE": {
+    "zoneName": "Portland General Electric Company",
+    "countryKey": "US",
+    "countryName": "USA",
+    "region": "Americas",
+    "timezone": "US/Pacific"
+  },
+  "US-NW-PSCO": {
+    "zoneName": "Public Service Company of Colorado",
+    "countryKey": "US",
+    "countryName": "USA",
+    "region": "Americas",
+    "timezone": "US/Mountain"
+  },
+  "US-NW-PSEI": {
+    "zoneName": "Puget Sound Energy",
+    "countryKey": "US",
+    "countryName": "USA",
+    "region": "Americas",
+    "timezone": "US/Pacific"
+  },
+  "US-NW-SCL": {
+    "zoneName": "Seattle City Light",
+    "countryKey": "US",
+    "countryName": "USA",
+    "region": "Americas",
+    "timezone": "US/Pacific"
+  },
+  "US-NW-TPWR": {
+    "zoneName": "City of Tacoma",
+    "countryKey": "US",
+    "countryName": "USA",
+    "region": "Americas",
+    "timezone": "US/Pacific"
+  },
+  "US-NW-WACM": {
+    "zoneName": "Western Area Power Administration - Rocky Mountain Region",
+    "countryKey": "US",
+    "countryName": "USA",
+    "region": "Americas",
+    "timezone": "US/Mountain"
+  },
+  "US-NW-WAUW": {
+    "zoneName": "Western Area Power Administration - Upper Great Plains West",
+    "countryKey": "US",
+    "countryName": "USA",
+    "region": "Americas",
+    "timezone": "US/Mountain"
+  },
+  "US-NY-NYIS": {
+    "zoneName": "New York ISO",
+    "countryKey": "US",
+    "countryName": "USA",
+    "region": "Americas",
+    "timezone": "US/Eastern"
+  },
+  "US-SE-SEPA": {
+    "zoneName": "Southeastern Power Administration",
+    "countryKey": "US",
+    "countryName": "USA",
+    "region": "Americas",
+    "timezone": "US/Eastern"
+  },
+  "US-SE-SOCO": {
+    "zoneName": "Southern Company Services",
+    "countryKey": "US",
+    "countryName": "USA",
+    "region": "Americas",
+    "timezone": "US/Eastern"
+  },
+  "US-SW-AZPS": {
+    "zoneName": "Arizona Public Service Company",
+    "countryKey": "US",
+    "countryName": "USA",
+    "region": "Americas",
+    "timezone": "US/Arizona"
+  },
+  "US-SW-EPE": {
+    "zoneName": "El Paso Electric Company",
+    "countryKey": "US",
+    "countryName": "USA",
+    "region": "Americas",
+    "timezone": "US/Mountain"
+  },
+  "US-SW-PNM": {
+    "zoneName": "Public Service Company of New Mexico",
+    "countryKey": "US",
+    "countryName": "USA",
+    "region": "Americas",
+    "timezone": "US/Mountain"
+  },
+  "US-SW-SRP": {
+    "zoneName": "Salt River Project",
+    "countryKey": "US",
+    "countryName": "USA",
+    "region": "Americas",
+    "timezone": "US/Arizona"
+  },
+  "US-SW-TEPC": {
+    "zoneName": "Tucson Electric Power Company",
+    "countryKey": "US",
+    "countryName": "USA",
+    "region": "Americas",
+    "timezone": "US/Arizona"
+  },
+  "US-SW-WALC": {
+    "zoneName": "Western Area Power Administration - Desert Southwest Region",
+    "countryKey": "US",
+    "countryName": "USA",
+    "region": "Americas",
+    "timezone": "US/Arizona"
+  },
+  "US-TEN-TVA": {
+    "zoneName": "Tennessee Valley Authority",
+    "countryKey": "US",
+    "countryName": "USA",
+    "region": "Americas",
+    "timezone": "US/Central"
+  },
+  "US-TEX-ERCO": {
+    "zoneName": "Electric Reliability Council of Texas",
+    "countryKey": "US",
+    "countryName": "USA",
+    "region": "Americas",
+    "timezone": "US/Central"
+  },
+  "US": {
+    "zoneName": "United States",
+    "countryKey": "US",
+    "countryName": "United States",
+    "region": "Americas",
+    "timezone": "US/Central"
+  },
+  "UY": {
+    "zoneName": "Uruguay",
+    "countryKey": "UY",
+    "countryName": "Uruguay",
+    "region": "Americas",
+    "timezone": "America/Montevideo"
+  },
+  "UZ": {
+    "zoneName": "Uzbekistan",
+    "countryKey": "UZ",
+    "countryName": "Uzbekistan",
+    "region": "Asia",
+    "timezone": "Asia/Samarkand"
+  },
+  "VC": {
+    "zoneName": "Saint Vincent and the Grenadines",
+    "countryKey": "VC",
+    "countryName": "Saint Vincent and the Grenadines",
+    "region": "Americas",
+    "timezone": "America/St_Vincent"
+  },
+  "VE": {
+    "zoneName": "Venezuela",
+    "countryKey": "VE",
+    "countryName": "Venezuela",
+    "region": "Americas",
+    "timezone": "America/Caracas"
+  },
+  "VI": {
+    "zoneName": "Virgin Islands",
+    "countryKey": "VI",
+    "countryName": "USA",
+    "region": "Americas",
+    "timezone": "America/St_Thomas"
+  },
+  "VN": {
+    "zoneName": "Vietnam",
+    "countryKey": "VN",
+    "countryName": "Vietnam",
+    "region": "Asia",
+    "timezone": "Asia/Ho_Chi_Minh"
+  },
+  "VU": {
+    "zoneName": "Vanuatu",
+    "countryKey": "VU",
+    "countryName": "Vanuatu",
+    "region": "Oceania",
+    "timezone": "Pacific/Efate"
+  },
+  "WS": {
+    "zoneName": "Samoa",
+    "countryKey": "WS",
+    "countryName": "Samoa",
+    "region": "Oceania",
+    "timezone": "Pacific/Apia"
+  },
+  "XK": {
+    "zoneName": "Kosovo",
+    "countryKey": "XK",
+    "countryName": "Kosovo",
+    "region": "Europe",
+    "timezone": "Europe/Belgrade"
+  },
+  "XX": {
+    "zoneName": "Northern Cyprus",
+    "countryKey": null,
+    "countryName": "Northern Cyprus",
+    "region": "Europe",
+    "timezone": "Asia/Nicosia"
+  },
+  "YE": {
+    "zoneName": "Yemen",
+    "countryKey": "YE",
+    "countryName": "Yemen",
+    "region": "Asia",
+    "timezone": "Asia/Aden"
+  },
+  "YT": {
+    "zoneName": "Mayotte",
+    "countryKey": "YT",
+    "countryName": "Mayotte",
+    "region": "Africa",
+    "timezone": "Indian/Mayotte"
+  },
+  "ZA": {
+    "zoneName": "South Africa",
+    "countryKey": "ZA",
+    "countryName": "South Africa",
+    "region": "Africa",
+    "timezone": "Africa/Johannesburg"
+  },
+  "ZM": {
+    "zoneName": "Zambia",
+    "countryKey": "ZM",
+    "countryName": "Zambia",
+    "region": "Africa",
+    "timezone": "Africa/Maputo"
+  },
+  "ZW": {
+    "zoneName": "Zimbabwe",
+    "countryKey": "ZW",
+    "countryName": "Zimbabwe",
+    "region": "Africa",
+    "timezone": "Africa/Harare"
+  }
+}

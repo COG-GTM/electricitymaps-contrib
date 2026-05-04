@@ -39,7 +39,9 @@ def main():
             cfg = yaml.safe_load(f)
         zones[zone_key] = {
             "zoneName": cfg.get("zone_name", cfg.get("zoneName", zone_key)),
-            "countryKey": cfg.get("country_code", cfg.get("countryKey")),
+            "countryKey": cfg.get(
+                "country", cfg.get("country_code", cfg.get("countryKey"))
+            ),
             "countryName": cfg.get("country_name", cfg.get("countryName", zone_key)),
             "region": cfg.get("region", "Unknown"),
             "timezone": cfg.get("timezone", "UTC"),
