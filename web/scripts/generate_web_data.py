@@ -37,12 +37,16 @@ def main():
         zone_key = fname.replace(".yaml", "")
         with open(os.path.join(ZONES_DIR, fname)) as f:
             cfg = yaml.safe_load(f)
+        timezone = cfg.get("timezone", "UTC")
+        # Bug in source data: BA.yaml lists Asia/Bahrain instead of Europe/Sarajevo.
+        if zone_key == "BA" and timezone == "Asia/Bahrain":
+            timezone = "Europe/Sarajevo"
         zones[zone_key] = {
             "zoneName": cfg.get("zone_name", cfg.get("zoneName", zone_key)),
             "countryKey": cfg.get("country_code", cfg.get("countryKey")),
             "countryName": cfg.get("country_name", cfg.get("countryName", zone_key)),
             "region": cfg.get("region", "Unknown"),
-            "timezone": cfg.get("timezone", "UTC"),
+            "timezone": timezone,
         }
     with open(os.path.join(OUT_DIR, "zones.json"), "w") as f:
         json.dump(zones, f, indent=2, ensure_ascii=False)
