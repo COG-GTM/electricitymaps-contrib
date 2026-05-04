@@ -2,6 +2,7 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
   type ReactNode,
@@ -63,10 +64,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const datetimes = useMemo(() => deriveDatetimes(gridState.data), [gridState.data]);
 
   // Default the slider to the latest available datetime as soon as the grid
-  // dataset arrives.
-  if (selectedDatetime === null && datetimes.length > 0) {
-    queueMicrotask(() => setSelectedDatetimeState(datetimes[datetimes.length - 1]));
-  }
+  // dataset arrives. Runs in the commit phase so it is safe with concurrent
+  // features and StrictMode's double-invoke render.
+  useEffect(() => {
+    if (selectedDatetime === null && datetimes.length > 0) {
+      setSelectedDatetimeState(datetimes[datetimes.length - 1]);
+    }
+  }, [selectedDatetime, datetimes]);
 
   const setSelectedDatetime = useCallback((dt: string) => {
     setSelectedDatetimeState(dt);
