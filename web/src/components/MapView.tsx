@@ -174,14 +174,22 @@ export default function MapView({
           const ci = props?.carbonIntensity;
           const ciText =
             ci != null ? `${ci} gCO\u2082eq/kWh` : 'No data';
-          popup
-            .setLngLat(e.lngLat)
-            .setHTML(
-              `<div class="zone-popup__title">${
-                props?.countryName ?? zone
-              }</div><div class="zone-popup__sub">${zone}</div><div class="zone-popup__ci">${ciText}</div>`,
-            )
-            .addTo(map);
+
+          const root = document.createElement('div');
+          const title = document.createElement('div');
+          title.className = 'zone-popup__title';
+          title.textContent = props?.countryName ?? zone;
+          const sub = document.createElement('div');
+          sub.className = 'zone-popup__sub';
+          sub.textContent = zone;
+          const ciNode = document.createElement('div');
+          ciNode.className = 'zone-popup__ci';
+          ciNode.textContent = ciText;
+          root.appendChild(title);
+          root.appendChild(sub);
+          root.appendChild(ciNode);
+
+          popup.setLngLat(e.lngLat).setDOMContent(root).addTo(map);
         }
       }
     });
