@@ -153,7 +153,7 @@ def query(
         target_dt_str = target_datetime_bd.strftime("%d-%m-%Y")
         target_url = HISTORICAL_URL + target_dt_str
 
-    target_response: Response = session.get(target_url, verify=False)
+    target_response: Response = session.get(target_url, verify=True)
     # SSL verification is disabled because the server's certificate is expired.
 
     if not target_response.ok:

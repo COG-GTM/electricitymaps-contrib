@@ -97,7 +97,7 @@ def get_data(
     if not session:
         session = Session()
 
-    resp: Response = session.get(url, verify=False, headers=headers, params=params)
+    resp: Response = session.get(url, verify=True, headers=headers, params=params)
     response_text = gzip.decompress(resp.content).decode("utf-8")
     data_json = json.loads(response_text)
     return data_json
@@ -436,7 +436,7 @@ def _get_dataframe_from_url(url, session, target_date):
     doc_id = doc["Document"]["DocID"]
 
     doc_url = f"{US_PROXY}/misdownload/servlets/mirDownload?doclookupId={doc_id}&{HOST_PARAMETER}"
-    resp: Response = session.get(doc_url)  # verify=False
+    resp: Response = session.get(doc_url)  # verify=True
 
     # Open the ZIP file
     with zipfile.ZipFile(BytesIO(resp.content)) as z:

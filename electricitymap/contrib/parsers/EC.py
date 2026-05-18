@@ -150,7 +150,7 @@ def fetch_production(
     s = session or Session()
     logger.info(f"Fetching Ecuador production from {URL}")
 
-    resp = s.get(URL, timeout=30, verify=False)
+    resp = s.get(URL, timeout=30, verify=True)
     resp.raise_for_status()
 
     traces = _parse_traces(resp.text)
@@ -207,7 +207,7 @@ def fetch_consumption(
     s = session or Session()
     logger.info(f"Fetching Ecuador consumption from {URL}")
 
-    resp = s.get(URL, timeout=30, verify=False)
+    resp = s.get(URL, timeout=30, verify=True)
     resp.raise_for_status()
 
     traces = _parse_traces(resp.text)

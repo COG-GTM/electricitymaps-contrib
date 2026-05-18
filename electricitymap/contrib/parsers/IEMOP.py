@@ -492,7 +492,7 @@ def get_all_market_reports_items(
         "page": "1",
         "post_id": KIND_TO_POST_ID[kind],
     }
-    res = session.post(REPORTS_ADMIN_URL, data=form_data, verify=False)
+    res = session.post(REPORTS_ADMIN_URL, data=form_data, verify=True)
     id_to_items = res.json().get("data", {})
     if not id_to_items:
         raise ParserException(

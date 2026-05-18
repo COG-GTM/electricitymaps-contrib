@@ -62,7 +62,7 @@ def get_production_data_by_type(
         response: Response = session.get(
             DATA_URL,
             params=params,
-            verify=False,
+            verify=True,
         )
 
         parsed_csv = list(reader(response.text.splitlines()))
@@ -90,7 +90,7 @@ def get_exchange_data(session: Session) -> tuple[list[Any], dict[str, str]]:
         "request": "CSV_N_",
         "p8_indx": 7,
     }
-    response: Response = session.get(DATA_URL, params=params, verify=False)
+    response: Response = session.get(DATA_URL, params=params, verify=True)
     CSV_data = list(reader(response.text.splitlines()))
     return CSV_data, EXCHANGE_MAP
 

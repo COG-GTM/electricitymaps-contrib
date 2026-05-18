@@ -56,7 +56,7 @@ def fetch_production(
         day + timedelta(days=1) - timedelta(seconds=1),
     )
 
-    # TODO: remove `verify=False` ASAP.
+    # TODO: remove `verify=True` ASAP.
     response = session.get(
         f"{URL_STRING}/diagramDownload",
         params={
@@ -67,7 +67,7 @@ def fetch_production(
             "toDate": timestamp_to.astimezone(TIMEZONE).strftime("%Y-%m-%dT%H:%M:%S"),
             "type": "FACT",
         },
-        verify=False,
+        verify=True,
     )
     if not response.ok:
         raise ParserException(
@@ -141,8 +141,8 @@ def fetch_exchange(
 
     now = datetime.now(timezone.utc)
     # The API uses the convention of positive net flow into GE.
-    # TODO: remove `verify=False` ASAP.
-    response = session.get(f"{URL_STRING}/map", verify=False)
+    # TODO: remove `verify=True` ASAP.
+    response = session.get(f"{URL_STRING}/map", verify=True)
     if not response.ok:
         raise ParserException(
             PARSER,
