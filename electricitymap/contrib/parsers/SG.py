@@ -155,7 +155,7 @@ def fetch_production(
 
     requests_obj = session or Session()
     # TODO: restore verification when source fixes configuration or we manually install their chain
-    requests_obj.verify = False
+    requests_obj.verify = True
 
     response = requests_obj.get(TICKER_URL)
     data = response.json()
@@ -238,7 +238,7 @@ def fetch_price(
 
     requests_obj = session or Session()
     # TODO: restore verification when source fixes configuration or we manually install their chain
-    requests_obj.verify = False
+    requests_obj.verify = True
     response = requests_obj.get(TICKER_URL)
     data = response.json()
 

@@ -143,7 +143,7 @@ def fetch_consumption_forecast(
     # Request data
     url = f"https://docs.misoenergy.org/marketreports/{target_datetime.strftime('%Y%m%d')}_df_al.xls"
     response = session.get(
-        url, verify=False
+        url, verify=True
     )  # use requests library with verification disabled
     df = pd.read_excel(
         io.BytesIO(response.content), sheet_name="Sheet1", skiprows=4, skipfooter=1

@@ -56,7 +56,7 @@ def fetch_price(
 
     r = session or Session()
     url = PRICE_URL
-    response = r.get(url, verify=False)
+    response = r.get(url, verify=True)
     obj = response.json()
     region_prices = []
 

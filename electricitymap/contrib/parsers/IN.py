@@ -344,7 +344,7 @@ def fetch_cea_production(
     adapter = HTTPAdapter(max_retries=retry_strategy)
     session.mount("https://", adapter)
     session.mount("http://", adapter)
-    r_all_data: Response = session.get(cea_data_url, headers=headers, verify=False)
+    r_all_data: Response = session.get(cea_data_url, headers=headers, verify=True)
     if r_all_data.status_code == 200:
         all_data = r_all_data.json()["data"]
         target_elem = [
@@ -356,7 +356,7 @@ def fetch_cea_production(
         if len(target_elem) > 0 and target_elem[0]["link"] != "file_not_found":
             target_url = target_elem[0]["link"].split(": ")[0]
             formatted_url = target_url.split("^")[0]
-            r: Response = session.get(formatted_url, headers=headers, verify=False)
+            r: Response = session.get(formatted_url, headers=headers, verify=True)
             renewable_production = format_ren_production_data(
                 content=r.content, zone_key=zone_key, target_datetime=target_datetime
             )

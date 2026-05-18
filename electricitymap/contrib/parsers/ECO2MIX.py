@@ -93,7 +93,7 @@ def query(url_type_arg, session: Session, target_datetime: datetime | None):
     if url_type_arg == "regionFlux":
         url = url.replace("dateDeb", "dateDebut")
     r = session or requests.session()
-    response = r.get(url, verify=False)
+    response = r.get(url, verify=True)
     response.raise_for_status()
     return response.text
 

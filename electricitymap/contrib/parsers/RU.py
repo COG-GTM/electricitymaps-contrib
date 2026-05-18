@@ -118,7 +118,7 @@ def fetch_production(
         date_key = "date"
         hour_key = "hour"
 
-    response = session.get(url, verify=False)
+    response = session.get(url, verify=True)
     json_content = json.loads(response.text)
     dataset = json_content[0]["m_Item2"]
 
@@ -204,7 +204,7 @@ def fetch_exchange(
 
     datapoints = []
     for url, hour in exchange_urls:
-        response = r.get(url, verify=False)
+        response = r.get(url, verify=True)
         json_content = json.loads(response.text)
 
         if response_checker(json_content):

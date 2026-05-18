@@ -120,7 +120,7 @@ def fetch_consumption(
         )
 
     logger.debug(f"Fetching consumption data from {REAL_TIME_URL}")
-    response = session.get(REAL_TIME_URL, verify=False)
+    response = session.get(REAL_TIME_URL, verify=True)
     assert response.ok
 
     return parse_consumption_data(response.text, zone_key, logger).to_list()
@@ -150,7 +150,7 @@ def fetch_price(
         )
 
     logger.debug(f"Fetching price data from {PRICE_URL}")
-    response = session.get(PRICE_URL, verify=False)
+    response = session.get(PRICE_URL, verify=True)
     assert response.ok
 
     price_list = PriceList(logger)
@@ -236,7 +236,7 @@ def get_real_time_prod_data(
     logger: Logger = getLogger(__name__),
 ) -> ProductionBreakdownList:
     session = session or Session()
-    res = session.get(REAL_TIME_URL, verify=False)
+    res = session.get(REAL_TIME_URL, verify=True)
     return parse_chart_prod_data(res.text, zone_key, logger)
 
 
@@ -253,7 +253,7 @@ def get_historical_prod_data(
     logger.debug(
         f"Fetching CSRF token to access production data from {HISTORICAL_PRODUCTION_URL}"
     )
-    session.get(HISTORICAL_PRODUCTION_URL, verify=False)
+    session.get(HISTORICAL_PRODUCTION_URL, verify=True)
     cookies_dict = session.cookies.get_dict()
 
     payload = {

@@ -76,7 +76,7 @@ def _fetch_live_consumption(
     session: Session,
     logger: Logger,
 ) -> list[dict[str, Any]]:
-    response: Response = session.get(CO_DEMAND_URL, verify=False)
+    response: Response = session.get(CO_DEMAND_URL, verify=True)
     response.raise_for_status()
 
     demand_data = response.json()["Variables"][0]["Datos"]
