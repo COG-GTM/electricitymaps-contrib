@@ -79,17 +79,11 @@ def fetch_production_capacity_for_all_zones(
         }
     )
 
-    # convert start and end columns to datetime
-    df["start"] = df["start"].apply(
-        lambda x: pd.to_datetime(x, utc=False).replace(day=1, month=1)
-    )
-    df["end"] = df["end"].apply(
-        lambda x: (
-            pd.to_datetime(x, utc=False).replace(day=31, month=12)
-            if x is not None
-            else x
-        )
-    )
+    # convert start and end columns to datetime, normalised to the start and end
+    # of their respective years
+    start = pd.to_datetime(df["start"], utc=False)
+    df["start"] = start - pd.to_timedelta(start.dt.dayofyear - 1, unit="D")
+    df["end"] = pd.to_datetime(df["end"], utc=False) + pd.offsets.YearEnd(0)
     df = filter_data_by_date(df, target_datetime)
     df["datetime"] = target_datetime
     df["mode"] = df["mode"].map(MODE_MAPPING)
