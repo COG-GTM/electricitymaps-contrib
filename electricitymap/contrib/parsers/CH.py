@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta, timezone
+from functools import lru_cache
 from io import StringIO
 from logging import Logger, getLogger
 
@@ -10,33 +11,28 @@ from electricitymap.contrib.parsers.lib.config import refetch_frequency
 from electricitymap.contrib.types import ZoneKey
 
 
-def get_solar_capacity_at(target_datetime: datetime) -> float:
-    """Returns the solar capacity (in MW) at a given time.
-
-    References:
-        https://www.uvek-gis.admin.ch/BFE/storymaps/EE_Elektrizitaetsproduktionsanlagen/?lang=en
-        https://www.uvek-gis.admin.ch/BFE/storymaps/EE_Elektrizitaetsproduktionsanlagen/data/solar.csv
+# Historical solar capacity records.
+# Values before 2015 are ignored as that is the absolute earliest we have some confidence in the data we are
+# collecting and flowtracing (2015 is when the ENTSO-E transparency platform launched).
+HISTORICAL_SOLAR_CAPACITY_DATA = """
+    Power_sum,Year,Plant_count
+    1398.217,2015,46162
+    1656.707,2016,56830
+    1875.034,2017,70074
+    2107.374,2018,83239
+    2398.745,2019,97776
+    2831.102,2020,117258
+    3370.261,2021,140428
+    4080.415,2022,173068
+    5094.375,2023,216440
+    5108.034,2024,216918
     """
 
-    # Prepare historical records
-    # Values before 2015 are ignored as that is the absolute earliest we have some confidence in the data we are
-    # collecting and flowtracing (2015 is when the ENTSO-E transparency platform launched).
-    historical_data = """
-        Power_sum,Year,Plant_count
-        1398.217,2015,46162
-        1656.707,2016,56830
-        1875.034,2017,70074
-        2107.374,2018,83239
-        2398.745,2019,97776
-        2831.102,2020,117258
-        3370.261,2021,140428
-        4080.415,2022,173068
-        5094.375,2023,216440
-        5108.034,2024,216918
-        """
 
+@lru_cache(maxsize=1)
+def _get_historical_solar_capacities() -> pd.DataFrame:
     historical_capacities = pd.read_csv(
-        StringIO(historical_data),
+        StringIO(HISTORICAL_SOLAR_CAPACITY_DATA),
         names=["installed capacity in megawatts", "year", "number of plants"],
         header=0,
         index_col=["year"],
@@ -44,6 +40,17 @@ def get_solar_capacity_at(target_datetime: datetime) -> float:
     historical_capacities.index = pd.to_datetime(
         historical_capacities.index, format="%Y", utc=True
     )
+    return historical_capacities
+
+
+def get_solar_capacity_at(target_datetime: datetime) -> float:
+    """Returns the solar capacity (in MW) at a given time.
+
+    References:
+        https://www.uvek-gis.admin.ch/BFE/storymaps/EE_Elektrizitaetsproduktionsanlagen/?lang=en
+        https://www.uvek-gis.admin.ch/BFE/storymaps/EE_Elektrizitaetsproduktionsanlagen/data/solar.csv
+    """
+    historical_capacities = _get_historical_solar_capacities()
 
     # mask all rows earlier than target date (use the earliest date in dataset if target date is even earlier)
     dt = max(
