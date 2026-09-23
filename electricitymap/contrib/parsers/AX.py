@@ -95,8 +95,8 @@ def formatted_data(
     exchanges = ExchangeList(logger)
     production_breakdowns = ProductionBreakdownList(logger)
     consumption = TotalConsumptionList(logger)
-    for data in data_list:
-        corrected_date = date - timedelta(minutes=15 * data_list.index(data))
+    for index, data in enumerate(data_list):
+        corrected_date = date - timedelta(minutes=15 * index)
         if data_type == "production" and zone_key is not None:
             production_mix = ProductionMix(wind=data["wind"], oil=data["fossil"])
             production_breakdowns.append(
