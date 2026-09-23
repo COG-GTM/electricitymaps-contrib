@@ -3,6 +3,7 @@
 """Parser for the Southwest Power Pool area of the United States."""
 
 import math
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta, timezone
 from io import StringIO
 from logging import Logger, getLogger
@@ -459,10 +460,20 @@ def fetch_realtime_locational_marginal_price(
 
     prices = LocationalMarginalPriceList(logger)
     # Get data for target datetime and previous 30 minutes in 5 min intervals
-    for minutes in range(0, 35, 5):
-        check_datetime = target_datetime - timedelta(minutes=minutes)
-        url = get_realtime_url(check_datetime)
-        raw_data = get_data(url, session)
+    check_datetimes = [
+        target_datetime - timedelta(minutes=minutes) for minutes in range(0, 35, 5)
+    ]
+    with ThreadPoolExecutor(max_workers=len(check_datetimes)) as executor:
+        raw_datas = list(
+            executor.map(
+                lambda check_datetime: get_data(
+                    get_realtime_url(check_datetime), session
+                ),
+                check_datetimes,
+            )
+        )
+
+    for check_datetime, raw_data in zip(check_datetimes, raw_datas, strict=True):
         if raw_data.empty:
             logger.warning(f"Empty response for {check_datetime}")
             continue
