@@ -2,7 +2,7 @@
 
 import json
 import urllib
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from io import StringIO
 from logging import Logger, getLogger
 from zoneinfo import ZoneInfo
@@ -76,6 +76,34 @@ TIMEZONE = ZoneInfo("America/Mexico_City")
 
 # cache where the data for whole months is stored as soon as it has been fetched once
 DATA_CACHE = {}
+
+# cache of the parsed live dashboard, shared by the exchange and consumption
+# fetchers so that a refresh only downloads and parses the page once per minute
+DASHBOARD_CACHE: dict[str, BeautifulSoup] = {}
+
+
+def fetch_dashboard(
+    session: Session, zone_key: ZoneKey | None = None
+) -> BeautifulSoup:
+    """Returns the parsed live dashboard, downloading it at most once per minute."""
+    cache_key = datetime.now(tz=timezone.utc).strftime("%Y-%m-%dT%H:%M")
+    cached_soup = DASHBOARD_CACHE.get(cache_key)
+    if cached_soup is not None:
+        return cached_soup
+
+    response: Response = session.get(
+        MX_EXCHANGE_URL, headers={"User-Agent": "Mozilla/5.0"}
+    )
+    if not response.ok:
+        raise ParserException(
+            "CENACE.py",
+            f"[{response.status_code}] Demand dashboard could not be reached: {response.text}",
+            zone_key,
+        )
+    soup = BeautifulSoup(response.text, "html.parser")
+    DASHBOARD_CACHE.clear()
+    DASHBOARD_CACHE[cache_key] = soup
+    return soup
 
 
 def parse_date(date, hour):
@@ -222,8 +250,7 @@ def fetch_production(
 
 def fetch_MX_exchange(sorted_zone_keys: ZoneKey, s: Session) -> float:
     """Finds current flow between two Mexican control areas."""
-    req = s.get(MX_EXCHANGE_URL, headers={"User-Agent": "Mozilla/5.0"})
-    soup = BeautifulSoup(req.text, "html.parser")
+    soup = fetch_dashboard(s, sorted_zone_keys)
     # cenace html uses unicode hyphens instead of minus signs and , as thousand separator
     trantab = str.maketrans({chr(8208): chr(45), ",": ""})
     if sorted_zone_keys == "MX->US-TEX-ERCO":
@@ -281,21 +308,11 @@ def fetch_consumption(
     logger: Logger = getLogger(__name__),
 ) -> list:
     """Gets the consumption data for a region using the live dashboard."""
-    # TODO the calls could be improved since we can get all the data in one call.
     if session is None:
         session = Session()
     if target_datetime is not None:
         raise NotImplementedError("This parser is not yet able to parse past dates")
-    response: Response = session.get(
-        MX_EXCHANGE_URL, headers={"User-Agent": "Mozilla/5.0"}
-    )
-    if not response.ok:
-        raise ParserException(
-            "CENACE.py",
-            f"[{response.status_code}] Demand dashboard could not be reached: {response.text}",
-            zone_key,
-        )
-    soup = BeautifulSoup(response.text, "html.parser")
+    soup = fetch_dashboard(session, zone_key)
     demand_td = soup.find(
         "td", attrs={"id": f"Demanda{REGION_MAPPING[zone_key]}", "class": "num"}
     )
