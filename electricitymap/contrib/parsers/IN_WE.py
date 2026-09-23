@@ -102,60 +102,59 @@ def _fetch_data(
     return data
 
 
-def _get_df_for_hour(kind: str, data: dict, hour: int) -> pd.DataFrame:
+def _get_hourly_df(kind: str, data: dict) -> pd.DataFrame:
     """
-    Returns a dataframe with a specific hour of interest.
+    Returns a dataframe of the full day of data, with an hour column.
     """
     datetime_col = KIND_MAPPING[kind]["datetime_col"]
-    return pd.DataFrame([item for item in data if item[datetime_col].hour == hour])
+    df = pd.DataFrame(data)
+    if df.empty:
+        return df
+    df["hour"] = df[datetime_col].map(lambda dt: dt.hour)
+    return df
 
 
-def _get_mean_hourly_net_flow(
+def _get_mean_hourly_net_flows(
     data: dict,
     zone_key1: str,
     zone_key2: str,
-    target_datetime: datetime,
-) -> float:
+) -> dict[int, float]:
     """
-    Average all data points in the target_datetime hour.
+    Average all data points of the exchange, per hour of the day.
     """
     region_col = KIND_MAPPING["exchange"]["region_col"]
     exchange_string = "->".join(sorted([zone_key1, zone_key2]))
 
-    df = _get_df_for_hour(kind="exchange", data=data, hour=target_datetime.hour)
-    df["zone_key"] = df[region_col].map(EXCHANGES_MAPPING)
-    df = df.loc[df["zone_key"] == exchange_string]
-    df.loc[:, "target_datetime"] = target_datetime
-    df = (
-        df.groupby([region_col, "target_datetime"])
+    df = _get_hourly_df(kind="exchange", data=data)
+    if df.empty:
+        return {}
+
+    df = df.loc[df[region_col].map(EXCHANGES_MAPPING) == exchange_string]
+    means = (
+        df.groupby(["hour", region_col])
         .mean(numeric_only=True)
         .reset_index()
+        .groupby("hour")
+        .first()
     )
+    if "Current_Loading" not in means.columns:
+        return dict.fromkeys(means.index, 0.0)
 
-    return -round(df.iloc[0].get("Current_Loading", 0), 3)
+    return {hour: -round(value, 3) for hour, value in means["Current_Loading"].items()}
 
 
-def _get_mean_hourly_consumption(
-    data: dict,
-    target_datetime: datetime,
-) -> float:
+def _get_mean_hourly_consumptions(data: dict) -> dict[int, float]:
     """
-    Average all data points in the target_datetime hour.
+    Average all data points per region and sum them up, per hour of the day.
     """
     region_col = KIND_MAPPING["consumption"]["region_col"]
 
-    df = _get_df_for_hour(kind="consumption", data=data, hour=target_datetime.hour)
-    df.loc[:, "target_datetime"] = target_datetime
-    df = (
-        df.groupby([region_col, "target_datetime"])
-        .mean(numeric_only=True)
-        .reset_index()
-    )
+    df = _get_hourly_df(kind="consumption", data=data)
+    if df.empty:
+        return {}
 
-    return round(
-        df.groupby(["target_datetime"])["Demand"].sum().values[0],
-        3,
-    )
+    totals = df.groupby(["hour", region_col])["Demand"].mean().groupby("hour").sum()
+    return {hour: round(value, 3) for hour, value in totals.items()}
 
 
 @refetch_frequency(timedelta(days=1))
@@ -179,14 +178,18 @@ def fetch_exchange(
         session=session,
         target_datetime=target_datetime,
     )
+    net_flows = _get_mean_hourly_net_flows(
+        zone_key1=zone_key1,
+        zone_key2=zone_key2,
+        data=data,
+    )
+
     exchange_list = ExchangeList(logger)
     for dt in _get_hour_dts(target_datetime):
-        net_flow = _get_mean_hourly_net_flow(
-            zone_key1=zone_key1,
-            zone_key2=zone_key2,
-            data=data,
-            target_datetime=dt,
-        )
+        if dt.hour not in net_flows:
+            logger.warning(f"{dt}: no exchange data for {exchange_string}")
+            continue
+        net_flow = net_flows[dt.hour]
         exchange_list.append(
             zoneKey=ZoneKey(exchange_string),
             datetime=dt,
@@ -217,9 +220,14 @@ def fetch_consumption(
         target_datetime=target_datetime,
     )
 
+    consumptions = _get_mean_hourly_consumptions(data=data)
+
     consumption_list = TotalConsumptionList(logger)
     for dt in _get_hour_dts(target_datetime):
-        consumption = _get_mean_hourly_consumption(data=data, target_datetime=dt)
+        if dt.hour not in consumptions:
+            logger.warning(f"{dt}: no consumption data")
+            continue
+        consumption = consumptions[dt.hour]
         consumption_list.append(
             zoneKey=zone_key,
             datetime=dt,
