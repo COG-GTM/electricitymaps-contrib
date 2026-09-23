@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 import json
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta, timezone
 from logging import Logger, getLogger
 from zoneinfo import ZoneInfo
@@ -66,6 +67,11 @@ exchange_ids = {
     "RU-1->UA-CR": 5688,
     "UA->RU-1": 880,
 }
+
+EXCHANGE_ID_VALUES = frozenset(exchange_ids.values())
+
+# Number of hourly flow diagram requests issued in parallel during backfill.
+EXCHANGE_MAX_WORKERS = 8
 
 SOURCE = "so-ups.ru"
 
@@ -166,7 +172,7 @@ def response_checker(json_content) -> bool:
 
     non_zero = False
     for item in flow_values:
-        if item["Id"] in list(exchange_ids.values()):
+        if item["Id"] in EXCHANGE_ID_VALUES:
             if item["NumValue"] == 0.0:
                 continue
             else:
@@ -202,16 +208,22 @@ def fetch_exchange(
             url = BASE_EXCHANGE_URL + DATE + f"&Hour={hour}"
             exchange_urls.append((url, int(hour)))
 
-    datapoints = []
-    for url, hour in exchange_urls:
+    def fetch_hour(url: str, hour: int) -> tuple[list, int] | None:
         response = r.get(url, verify=False)
         json_content = json.loads(response.text)
 
-        if response_checker(json_content):
-            datapoints.append((json_content["Flows"], hour))
-        else:
+        if not response_checker(json_content):
             # data not yet available for this hour
-            continue
+            return None
+
+        return json_content["Flows"], hour
+
+    with ThreadPoolExecutor(
+        max_workers=min(EXCHANGE_MAX_WORKERS, len(exchange_urls))
+    ) as executor:
+        results = executor.map(lambda args: fetch_hour(*args), exchange_urls)
+
+    datapoints = [result for result in results if result is not None]
 
     sortedcodes = "->".join(sorted([zone_key1, zone_key2]))
     reversesortedcodes = "->".join(sorted([zone_key1, zone_key2], reverse=True))
