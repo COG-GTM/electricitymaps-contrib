@@ -408,11 +408,10 @@ def format_exchange_data(
     data_filtered = data_filtered.groupby([data_filtered.index])["exchange"].sum()
 
     exchange_list = ExchangeList(logger)
-    for dt in data_filtered.index:
-        data_dt = data_filtered.loc[data_filtered.index == dt]
+    for dt, net_flow in data_filtered.items():
         exchange_list.append(
             zoneKey=sorted_zone_keys,
-            netFlow=round(data_dt.values[0], 4),
+            netFlow=round(net_flow, 4),
             datetime=dt.to_pydatetime(),
             source=SOURCE,
         )
