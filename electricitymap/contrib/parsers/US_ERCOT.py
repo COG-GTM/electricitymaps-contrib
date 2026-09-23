@@ -561,6 +561,7 @@ def fetch_dayahead_locational_marginal_price(
         "host": "https://api.ercot.com",
         "deliveryDateFrom": target_datetime.strftime("%Y-%m-%d"),
         "deliveryDateTo": target_datetime.strftime("%Y-%m-%d"),
+        "size": 1,
     }
     headers = {
         "Authorization": f"Bearer {id_token}",
@@ -616,6 +617,7 @@ def fetch_realtime_locational_marginal_price(
         "host": "https://api.ercot.com",
         "SCEDTimestampTo": end_datetime.strftime("%Y-%m-%dT%H:%M:%S"),
         "SCEDTimestampFrom": start_datetime.strftime("%Y-%m-%dT%H:%M:%S"),
+        "size": 1,
     }
     headers = {
         "Authorization": f"Bearer {id_token}",
