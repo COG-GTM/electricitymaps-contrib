@@ -72,18 +72,21 @@ def fetch_data(
     # Parse values from the two lists and loop over them to find missing datetimes
     # if the two lists are not of equal length and do not have the same datetimes.
     else:
-        logger.info("Data mismatch! Recursively looping over lists to match data")
+        logger.info("Data mismatch! Matching data on datetime")
+        SE2_netFlow_by_datetime = {
+            SE2_data["datetime"]: SE2_data["netFlow"] for SE2_data in SE2_dataList
+        }
         for SE1_data in SE1_dataList:
-            for SE2_data in SE2_dataList:
-                if SE1_data["datetime"] == SE2_data["datetime"]:
-                    returnList.append(
-                        {
-                            "datetime": SE1_data["datetime"],
-                            "netFlow": SE1_data["netFlow"] + SE2_data["netFlow"],
-                            "sortedZoneKeys": "NO-NO4->SE",
-                            "source": SE1_data["source"],
-                        }
-                    )
+            SE2_netFlow = SE2_netFlow_by_datetime.get(SE1_data["datetime"])
+            if SE2_netFlow is not None:
+                returnList.append(
+                    {
+                        "datetime": SE1_data["datetime"],
+                        "netFlow": SE1_data["netFlow"] + SE2_netFlow,
+                        "sortedZoneKeys": "NO-NO4->SE",
+                        "source": SE1_data["source"],
+                    }
+                )
     if returnList != []:
         return returnList
     else:
