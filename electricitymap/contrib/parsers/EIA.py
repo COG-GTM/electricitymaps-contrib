@@ -366,6 +366,8 @@ TYPES = {
     "hydro_storage": "PS",
 }
 
+MODES_BY_TYPE_CODE = {code: mode for mode, code in TYPES.items()}
+
 BASE_URL = "https://api.eia.gov/v2/electricity/rto"
 
 PRODUCTION = (
@@ -380,9 +382,13 @@ CONSUMPTION_FORECAST = (
     f"{BASE_URL}/region-data/data/"
     "?data[]=value&facets[respondent][]={}&facets[type][]=DF&frequency=hourly"
 )
+# Every fuel type is requested at once and split client side using the `fueltype`
+# field of each datapoint, hence the raised `length`.
 PRODUCTION_MIX = (
     f"{BASE_URL}/fuel-type-data/data/"
-    "?data[]=value&facets[respondent][]={}&facets[fueltype][]={}&frequency=hourly"
+    "?data[]=value&facets[respondent][]={}"
+    + "".join(f"&facets[fueltype][]={code}" for code in TYPES.values())
+    + "&frequency=hourly&length=5000"
 )
 EXCHANGE = f"{BASE_URL}/interchange-data/data/?data[]=value{{}}&frequency=hourly"
 
@@ -501,20 +507,32 @@ def fetch_production_mix(
     logger: Logger = getLogger(__name__),
 ):
     all_production_breakdowns: list[ProductionBreakdownList] = []
-    # TODO: We could be smarter in the future and only fetch the expected production types.
-    for production_mode, code in TYPES.items():
-        negative_threshold = NEGATIVE_PRODUCTION_THRESHOLDS_TYPE.get(
-            production_mode, NEGATIVE_PRODUCTION_THRESHOLDS_TYPE["default"]
-        )
-        production_breakdown = ProductionBreakdownList(logger)
-        url_prefix = PRODUCTION_MIX.format(REGIONS[zone_key], code)
-        production_and_storage_values = _fetch_historical(
-            zone_key,
-            url_prefix,
+    values_by_mode = _fetch_production_mix_historical(
+        zone_key,
+        REGIONS[zone_key],
+        session=session,
+        target_datetime=target_datetime,
+        logger=logger,
+    )
+    supplying_zones = PRODUCTION_ZONES_TRANSFERS.get(zone_key, {})
+    supplied_values_by_zone = {
+        zone: _fetch_production_mix_historical(
+            ZoneKey(zone),
+            REGIONS[zone],
             session=session,
             target_datetime=target_datetime,
             logger=logger,
         )
+        for zone in sorted(
+            {zone for zones in supplying_zones.values() for zone in zones}
+        )
+    }
+    for production_mode in TYPES:
+        negative_threshold = NEGATIVE_PRODUCTION_THRESHOLDS_TYPE.get(
+            production_mode, NEGATIVE_PRODUCTION_THRESHOLDS_TYPE["default"]
+        )
+        production_breakdown = ProductionBreakdownList(logger)
+        production_and_storage_values = values_by_mode[production_mode]
         # EIA does not currently split production from the Virgil Summer C
         # plant across the two owning/ utilizing BAs:
         # US-CAR-SCEG and US-CAR-SC,
@@ -576,21 +594,13 @@ def fetch_production_mix(
         all_production_breakdowns.append(production_breakdown)
         # Integrate the supplier zones in the zones they supply
 
-        supplying_zones = PRODUCTION_ZONES_TRANSFERS.get(zone_key, {})
         zones_to_integrate = {
             **supplying_zones.get("all", {}),
             **supplying_zones.get(production_mode, {}),
         }
         for zone, percentage in zones_to_integrate.items():
-            url_prefix = PRODUCTION_MIX.format(REGIONS[zone], code)
             additional_breakdown = ProductionBreakdownList(logger)
-            additional_production = _fetch_historical(
-                ZoneKey(zone),
-                url_prefix,
-                session=session,
-                target_datetime=target_datetime,
-                logger=logger,
-            )
+            additional_production = supplied_values_by_zone[zone][production_mode]
             for point in additional_production:
                 point.update({"value": point["value"] * percentage})
                 production_mix, storage_mix = create_production_storage(
@@ -715,6 +725,7 @@ def _fetch_any(
             "datetime": _parse_hourly_interval(datapoint["period"]),
             "value": float(datapoint["value"]) if datapoint["value"] else None,
             "source": "eia.gov",
+            **({"fueltype": datapoint["fueltype"]} if "fueltype" in datapoint else {}),
         }
         for datapoint in raw_data["response"]["data"]
     ]
@@ -738,6 +749,39 @@ def _fetch_historical(
         start = end - timedelta(hours=72)
 
     return _fetch_any(zone_key, url_prefix, start, end, session, logger)
+
+
+def _fetch_production_mix_historical(
+    zone_key: ZoneKey,
+    region: str,
+    session: Session | None = None,
+    target_datetime: datetime | None = None,
+    logger: Logger = getLogger(__name__),
+) -> dict[str, list[dict[str, Any]]]:
+    """Fetch every fuel type of a region in a single request and split the returned
+    datapoints by production mode."""
+    datapoints = _fetch_historical(
+        zone_key,
+        PRODUCTION_MIX.format(region),
+        session=session,
+        target_datetime=target_datetime,
+        logger=logger,
+    )
+    values_by_mode: dict[str, list[dict[str, Any]]] = {mode: [] for mode in TYPES}
+    unknown_fuel_types: set[str | None] = set()
+    for datapoint in datapoints:
+        fuel_type = datapoint.pop("fueltype", None)
+        production_mode = MODES_BY_TYPE_CODE.get(fuel_type)
+        if production_mode is None:
+            unknown_fuel_types.add(fuel_type)
+            continue
+        values_by_mode[production_mode].append(datapoint)
+    if unknown_fuel_types:
+        logger.warning(
+            f"Ignored unexpected fuel types for {zone_key}: "
+            f"{sorted(str(fuel_type) for fuel_type in unknown_fuel_types)}"
+        )
+    return values_by_mode
 
 
 def _fetch_forecast(
