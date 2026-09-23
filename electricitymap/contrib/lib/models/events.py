@@ -293,6 +293,12 @@ class EventSourceType(str, Enum):
     published = "published"
 
 
+FUTURE_OK_SOURCE_TYPES = frozenset(
+    (EventSourceType.forecasted, EventSourceType.published)
+)
+MAX_FUTURE_DELTA = timedelta(days=1)
+
+
 class Event(BaseModel, ABC):
     """
     An abstract class representing all types of electricity events that can occur in a zone.
@@ -326,10 +332,11 @@ class Event(BaseModel, ABC):
         if v < LOWER_DATETIME_BOUND:
             raise ValueError(f"Date is before 2000, this is not plausible: {v}")
         source_type = values.get("sourceType", EventSourceType.measured)
-        future_ok = {EventSourceType.forecasted, EventSourceType.published}
-        if source_type not in future_ok and v.astimezone(timezone.utc) > datetime.now(
-            timezone.utc
-        ) + timedelta(days=1):
+        if (
+            source_type not in FUTURE_OK_SOURCE_TYPES
+            and v.astimezone(timezone.utc)
+            > datetime.now(timezone.utc) + MAX_FUTURE_DELTA
+        ):
             raise ValueError(
                 f"Date is in the future and this is not a forecasted or published point: {v}"
             )
