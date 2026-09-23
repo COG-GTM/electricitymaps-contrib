@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 from collections import defaultdict
+from concurrent.futures import ThreadPoolExecutor
 from datetime import date, datetime, time, timedelta, timezone
 from logging import Logger, getLogger
 from typing import Any
@@ -84,6 +85,8 @@ SOURCE = "ieso.ca"
 # use UTC-5 rather than 'Canada/Eastern'.
 TIMEZONE = timezone(timedelta(hours=-5), name="UTC-5")
 ZONE_KEY = ZoneKey("CA-ON")
+# Number of grid alert detail pages fetched in parallel.
+GRID_ALERT_DETAIL_WORKERS = 4
 
 
 def _fetch_xml(
@@ -525,6 +528,20 @@ def fetch_wind_solar_forecasts(
     return production_list.to_list()
 
 
+def _fetch_grid_alert_details(session: Session, links: list[str]) -> list[str]:
+    """Fetches the notice detail pages, returned in the order of `links`."""
+    if not links:
+        return []
+
+    def fetch(link: str) -> str:
+        return session.get("https://www.ieso.ca" + link).text
+
+    with ThreadPoolExecutor(
+        max_workers=min(GRID_ALERT_DETAIL_WORKERS, len(links))
+    ) as executor:
+        return list(executor.map(fetch, links))
+
+
 def fetch_grid_alerts(
     zone_key: ZoneKey = ZONE_KEY,
     session: Session | None = None,
@@ -549,13 +566,13 @@ def fetch_grid_alerts(
 
     grid_alert_list = GridAlertList(logger)
 
+    notices: list[tuple[GridAlertType, datetime, str, str]] = []
     for url in urls:
         # Fetch the data from the URL
         response = session.get(url)
         json_data = response.json()
         entries = json_data[0]["TableRows"]  # stored in a table
 
-        # Record events in grid_alert_list
         for notice in entries:
             alert_type = notice["Cells"][0]["Value"]
 
@@ -579,40 +596,47 @@ def fetch_grid_alerts(
             link = soup.find_all("a")[0]["href"]
             subject = soup.find_all("a")[0]["title"]
 
-            # Extract the body
-            url2 = "https://www.ieso.ca" + link
-            response2 = session.get(url2)
-            soup2 = BeautifulSoup(response2.text, "html.parser")
+            notices.append((alert_type, issued_at_dt, subject, link))
 
-            # Find start and end times before the table
-            start_time = soup2.find_all("p")[0].get_text(strip=True)
-            start_time_dt = datetime.strptime(
-                start_time, "Start: %a, %d %b %Y %H:%M EST"
-            ).replace(tzinfo=TIMEZONE)
-            end_time = soup2.find_all("p")[1].get_text(strip=True)
-            end_time_dt = datetime.strptime(
-                end_time, "End: %a, %d %b %Y %H:%M EST"
-            ).replace(tzinfo=TIMEZONE)
+    # The notice detail pages are independent, so fetch them concurrently to
+    # avoid a wall-clock latency that grows linearly with the notice count.
+    detail_pages = _fetch_grid_alert_details(session, [link for *_, link in notices])
 
-            # Find all <tr> rows
-            rows = soup2.find_all("tr")
+    # Record events in grid_alert_list
+    for (alert_type, issued_at_dt, subject, _link), page in zip(
+        notices, detail_pages, strict=True
+    ):
+        soup2 = BeautifulSoup(page, "html.parser")
 
-            # Extract the 2nd <td> (description) from each row
-            for row in rows:
-                tds = row.find_all("td")
-                if len(tds) >= 2:
-                    description = tds[1].get_text(separator=" ", strip=True)
+        # Find start and end times before the table
+        start_time = soup2.find_all("p")[0].get_text(strip=True)
+        start_time_dt = datetime.strptime(
+            start_time, "Start: %a, %d %b %Y %H:%M EST"
+        ).replace(tzinfo=TIMEZONE)
+        end_time = soup2.find_all("p")[1].get_text(strip=True)
+        end_time_dt = datetime.strptime(
+            end_time, "End: %a, %d %b %Y %H:%M EST"
+        ).replace(tzinfo=TIMEZONE)
 
-            grid_alert_list.append(
-                zoneKey=zone_key,
-                locationRegion=None,
-                source=SOURCE,
-                alertType=alert_type,
-                message=subject + "\n" + description,
-                issuedTime=issued_at_dt,
-                startTime=start_time_dt,  # if None, it defaults to issuedTime
-                endTime=end_time_dt,
-            )
+        # Find all <tr> rows
+        rows = soup2.find_all("tr")
+
+        # Extract the 2nd <td> (description) from each row
+        for row in rows:
+            tds = row.find_all("td")
+            if len(tds) >= 2:
+                description = tds[1].get_text(separator=" ", strip=True)
+
+        grid_alert_list.append(
+            zoneKey=zone_key,
+            locationRegion=None,
+            source=SOURCE,
+            alertType=alert_type,
+            message=subject + "\n" + description,
+            issuedTime=issued_at_dt,
+            startTime=start_time_dt,  # if None, it defaults to issuedTime
+            endTime=end_time_dt,
+        )
     return grid_alert_list.to_list()
 
 
