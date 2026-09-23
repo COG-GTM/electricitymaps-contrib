@@ -201,18 +201,22 @@ def parse_production(
     mode_key = dataset_info[dataset]["mode_key"]
     quantity_key = dataset_info[dataset]["quantity_key"]
 
-    all_production_breakdowns: list[ProductionBreakdownList] = []
+    mixes_by_datetime: dict[datetime, tuple[ProductionMix, StorageMix]] = {}
 
     for event in production_data:
-        production_breakdown = ProductionBreakdownList(logger=logger)
-        event_datetime_str = event.get("startTime")
-        production_mix = ProductionMix()
-        storage_mix = StorageMix()
-
         production_mode = mode_mapping[event.get(mode_key)]
 
         if production_mode == "exchange":
             continue
+
+        event_datetime_str = event.get("startTime")
+        if not event_datetime_str:
+            continue
+
+        event_datetime = datetime.fromisoformat(zulu_to_utc(event_datetime_str))
+        if event_datetime not in mixes_by_datetime:
+            mixes_by_datetime[event_datetime] = (ProductionMix(), StorageMix())
+        production_mix, storage_mix = mixes_by_datetime[event_datetime]
 
         if production_mode == "hydro storage":
             storage_value = get_event_value(event, quantity_key)
@@ -221,23 +225,21 @@ def parse_production(
 
         else:
             production_value = get_event_value(event, quantity_key)
-            production_mix.add_value(
-                production_mode, production_value, correct_negative_with_zero=True
-            )
-        if event_datetime_str:
-            event_datetime = datetime.fromisoformat(zulu_to_utc(event_datetime_str))
-            production_breakdown.append(
-                zoneKey=ZoneKey("GB"),
-                production=production_mix,
-                storage=storage_mix,
-                source=ELEXON_SOURCE,
-                datetime=event_datetime,
-            )
+            if production_value is not None:
+                production_mix.add_value(
+                    production_mode, production_value, correct_negative_with_zero=True
+                )
 
-        all_production_breakdowns.append(production_breakdown)
-    events = ProductionBreakdownList.merge_production_breakdowns(
-        all_production_breakdowns, logger
-    )
+    events = ProductionBreakdownList(logger=logger)
+    for event_datetime in sorted(mixes_by_datetime):
+        production_mix, storage_mix = mixes_by_datetime[event_datetime]
+        events.append(
+            zoneKey=ZoneKey("GB"),
+            production=production_mix,
+            storage=storage_mix,
+            source=ELEXON_SOURCE,
+            datetime=event_datetime,
+        )
     return events
 
 
@@ -278,14 +280,14 @@ def query_additional_eso_data(
 def parse_eso_production(
     production_data: list[dict[str, Any]], logger: Logger
 ) -> ProductionBreakdownList:
-    all_production_breakdowns: list[ProductionBreakdownList] = []
+    mixes_by_datetime: dict[datetime, tuple[ProductionMix, StorageMix]] = {}
     for event in production_data:
-        production_breakdown = ProductionBreakdownList(logger=logger)
         event_datetime = parse_datetime(
             event.get("SETTLEMENT_DATE"), event.get("SETTLEMENT_PERIOD")
         )
-        production_mix = ProductionMix()
-        storage_mix = StorageMix()
+        if event_datetime not in mixes_by_datetime:
+            mixes_by_datetime[event_datetime] = (ProductionMix(), StorageMix())
+        production_mix, storage_mix = mixes_by_datetime[event_datetime]
         for production_mode in ESO_FUEL_MAPPING:
             if ESO_FUEL_MAPPING[production_mode] == "hydro storage":
                 storage_value = get_event_value(event, production_mode)
@@ -299,18 +301,17 @@ def parse_eso_production(
                         event.get(production_mode),
                         correct_negative_with_zero=True,
                     )
-        production_breakdown.append(
+
+    events = ProductionBreakdownList(logger=logger)
+    for event_datetime in sorted(mixes_by_datetime):
+        production_mix, storage_mix = mixes_by_datetime[event_datetime]
+        events.append(
             zoneKey=ZoneKey("GB"),
             production=production_mix,
             storage=storage_mix,
             source=ESO_SOURCE,
             datetime=event_datetime,
         )
-
-        all_production_breakdowns.append(production_breakdown)
-    events = ProductionBreakdownList.merge_production_breakdowns(
-        all_production_breakdowns, logger
-    )
     return events
 
 
