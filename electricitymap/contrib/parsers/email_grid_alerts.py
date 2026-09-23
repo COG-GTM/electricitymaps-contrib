@@ -2,6 +2,7 @@
 
 import datetime
 import json
+from concurrent.futures import ThreadPoolExecutor
 from logging import Logger, getLogger
 from typing import Any
 
@@ -16,6 +17,7 @@ from electricitymap.contrib.parsers.lib.utils import get_token
 # CONFIGURATION
 REGION = "eu"  # use 'us' or 'eu'
 API_BASE_URL = f"https://api.{REGION}.mailgun.net/v1/analytics/logs"
+MAX_CONCURRENT_MESSAGE_REQUESTS = 8
 
 
 def fetch_grid_alerts_emails(
@@ -99,20 +101,24 @@ def fetch_grid_alerts_emails(
     # Record events in grid_alert_list
     grid_alert_list = GridAlertList(logger)
 
-    # Get email using storage keys # The email is stored only for a few days (less than 3 days)
-    for storage_key in keys:
-        API_BASE_URL2 = f"https://api.{REGION}.mailgun.net/v3/domains/{domain_name}/messages/{storage_key}"
-
-        # MAKE REQUEST
-        response = session.get(
-            API_BASE_URL2,
+    def fetch_email(storage_key: str) -> dict[str, Any]:
+        message_url = f"https://api.{REGION}.mailgun.net/v3/domains/{domain_name}/messages/{storage_key}"
+        return session.get(
+            message_url,
             auth=HTTPBasicAuth("api", MAILGUN_API_KEY),
             headers={"Content-Type": "application/json"},
-        )
+        ).json()
 
-        # Parse email
-        email_json = response.json()
+    # Get emails using storage keys # The email is stored only for a few days (less than 3 days)
+    if keys:
+        with ThreadPoolExecutor(
+            max_workers=min(MAX_CONCURRENT_MESSAGE_REQUESTS, len(keys))
+        ) as executor:
+            emails = list(executor.map(fetch_email, keys))
+    else:
+        emails = []
 
+    for email_json in emails:
         date_str = email_json["Date"].replace(" (UTC)", "")
         dt_received = datetime.datetime.strptime(date_str, "%a, %d %b %Y %H:%M:%S %z")
         sender = email_json["From"].lower()
