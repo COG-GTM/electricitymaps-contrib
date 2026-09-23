@@ -453,6 +453,13 @@ EXCHANGE_KEY_MAPPING = {
     "MINVIS1": {"zone_key": "PH-MI->PH-VI", "flow": 1},
     "VISLUZ1": {"zone_key": "PH-LU->PH-VI", "flow": -1},
 }
+EXCHANGE_KEY_TO_ZONE_KEY = {
+    hvdc_name: mapping["zone_key"]
+    for hvdc_name, mapping in EXCHANGE_KEY_MAPPING.items()
+}
+EXCHANGE_KEY_TO_FLOW = {
+    hvdc_name: mapping["flow"] for hvdc_name, mapping in EXCHANGE_KEY_MAPPING.items()
+}
 KIND_TO_URL = {"production": DIPC_URL, "exchange": RTDHS_URL}
 KIND_TO_POST_ID = {"production": "5754", "exchange": "5770"}
 STORAGE_METHODS_TO_MODE = {"hydro_storage": "hydro", "battery": "battery"}
@@ -468,6 +475,18 @@ def _validate_resource_name_to_mode_mapping():
             raise ValueError(
                 f"Resource {resource_name} has an unknown mode {mode} in RESOURCE_NAME_TO_MODE"
             )
+
+
+def _map_strict(series: pd.Series, mapping: dict, column_name: str) -> pd.Series:
+    """Vectorized dict lookup that fails on values missing from the mapping."""
+    mapped = series.map(mapping)
+    unknown = series[mapped.isna()].unique()
+    if len(unknown):
+        raise ParserException(
+            parser="IEMOP.py",
+            message=f"Unknown {column_name} values: {sorted(unknown)}",
+        )
+    return mapped
 
 
 class MarketReportsItem(NamedTuple):
@@ -581,8 +600,10 @@ def download_production_market_reports_items(
                         # Remove 5 minute interval as we want start of interval convention
                         _df["datetime"] = _df["datetime"] - timedelta(minutes=5)
                         # Misc
-                        _df["REGION_NAME"] = _df["REGION_NAME"].apply(
-                            lambda x: REGION_TO_ZONE_KEY[x]
+                        _df["REGION_NAME"] = _map_strict(
+                            _df["REGION_NAME"],
+                            REGION_TO_ZONE_KEY,
+                            "REGION_NAME",
                         )
                         _df["filename"] = csv_filename
                         _df = _df[["datetime", "filename", *COLUMNS_MAPPING.keys()]]
@@ -630,11 +651,9 @@ def filter_valid_values(df: pd.DataFrame, logger: Logger) -> pd.DataFrame:
 def match_resources_to_modes(df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
     # Remove 0 padding in resource name
-    df["resource_name"] = df["resource_name"].apply(lambda x: x.strip("0"))
+    df["resource_name"] = df["resource_name"].str.strip("0")
     # Match resource name to mode
-    df["mode"] = df["resource_name"].apply(
-        lambda x: RESOURCE_NAME_TO_MODE.get(x, "unknown")
-    )
+    df["mode"] = df["resource_name"].map(RESOURCE_NAME_TO_MODE).fillna("unknown")
     # Match resource name to kind
     df["resource_kind"] = df["mode"].map(MODES_TO_RESOURCE_KIND)
     return df
@@ -684,12 +703,12 @@ def download_exchange_market_reports_items(
         _df = pd.read_csv(r.url)
         _df = _df[:-1]
         _df = convert_column_to_datetime(_df, "RUN_TIME")
-        _df["zone_key"] = _df["HVDC_NAME"].apply(
-            lambda x: EXCHANGE_KEY_MAPPING[x]["zone_key"]
+        _df["zone_key"] = _map_strict(
+            _df["HVDC_NAME"], EXCHANGE_KEY_TO_ZONE_KEY, "HVDC_NAME"
         )
-        _df["net_flow"] = _df.apply(
-            lambda x: EXCHANGE_KEY_MAPPING[x["HVDC_NAME"]]["flow"] * x["FLOW_FROM"],
-            axis=1,
+        _df["net_flow"] = (
+            _map_strict(_df["HVDC_NAME"], EXCHANGE_KEY_TO_FLOW, "HVDC_NAME")
+            * _df["FLOW_FROM"]
         )
         _df = _df[["datetime", "zone_key", "net_flow"]]
         _all_items_df.append(_df)
