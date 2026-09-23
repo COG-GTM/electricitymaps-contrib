@@ -3,6 +3,8 @@
 """Parser for all of India"""
 
 from datetime import datetime, timedelta
+from functools import cached_property
+from io import BytesIO
 from logging import Logger, getLogger
 from typing import Any
 from zoneinfo import ZoneInfo
@@ -456,7 +458,40 @@ def fetch_grid_india_report(
         )
 
 
-def get_daily_generation_table(content: bytes) -> pd.DataFrame:
+class GridIndiaReport:
+    """
+    Holds the bytes of a Grid India daily report and parses each sheet it exposes
+    at most once, as Excel parsing is CPU-heavy and the same sheets are needed by
+    several steps of the production computation.
+    """
+
+    def __init__(self, content: bytes):
+        self.content = content
+
+    @cached_property
+    def _workbook(self) -> pd.ExcelFile:
+        return pd.ExcelFile(BytesIO(self.content), engine="xlrd")
+
+    @cached_property
+    def daily_generation_sheet(self) -> pd.DataFrame:
+        """First sheet of the report, with the sourcewise generation table header."""
+        return self._workbook.parse(header=4)
+
+    @cached_property
+    def power_supply_position_sheet(self) -> pd.DataFrame:
+        """First sheet of the report, with the power supply position table header."""
+        return self._workbook.parse(header=2)
+
+    @cached_property
+    def time_series_sheet(self) -> pd.DataFrame:
+        return self._workbook.parse(sheet_name="TimeSeries", header=2)
+
+
+def _as_report(content: bytes | GridIndiaReport) -> GridIndiaReport:
+    return content if isinstance(content, GridIndiaReport) else GridIndiaReport(content)
+
+
+def get_daily_generation_table(content: bytes | GridIndiaReport) -> pd.DataFrame:
     """
     Get the G. Sourcewise generation (Gross) (MU) table from the daily report.
     Returns a DataFrame with the generation for each mode.
@@ -472,7 +507,7 @@ def get_daily_generation_table(content: bytes) -> pd.DataFrame:
     | gas | 500   |
     | unknown | 600   |
     """
-    df = pd.read_excel(content, engine="xlrd", header=4)
+    df = _as_report(content).daily_generation_sheet
 
     START_PATTERN = "Sourcewise generation"
     END_PATTERN = "Demand Diversity Factor"
@@ -523,7 +558,7 @@ def get_daily_generation_table(content: bytes) -> pd.DataFrame:
     return generation_df_without_re_share
 
 
-def get_wind_solar(content: bytes, zone_key: str) -> pd.DataFrame:
+def get_wind_solar(content: bytes | GridIndiaReport, zone_key: str) -> pd.DataFrame:
     """
     Gets the wind and solar production for a given zone key.
     Retrieves it from the daily report,
@@ -538,7 +573,7 @@ def get_wind_solar(content: bytes, zone_key: str) -> pd.DataFrame:
     | solar| 200   |
     """
 
-    df = pd.read_excel(content, engine="xlrd", header=2)
+    df = _as_report(content).power_supply_position_sheet
     START_PATTERN = "A. Power Supply Position"
     END_PATTERN = "B. Frequency Profile"
 
@@ -598,7 +633,7 @@ def parse_daily_production_grid_india_report(
     This will then be reestimated by the estimation pipeline and the mode breakdown.
     """
     daily_production_breakdown = get_production_breakdown(
-        content=content, zone_key=zone_key
+        content=_as_report(content), zone_key=zone_key
     )
     daily_production_breakdown["value"] = (
         daily_production_breakdown["value"] / CONVERSION_DAILY_GWH_TO_HOURLY_MW
@@ -642,13 +677,14 @@ def parse_15m_production_grid_india_report(
     Then, we assume that each zone has the same share of the production share for a given mode over the whole day.
     We then breakdown the (15-minute, country-level, per mode) data, to (15-minute, zone-level, per mode) data.
     """
+    report = _as_report(content)
     # Get total production for the whole country, from the daily data report.
     daily_india_generation = parse_daily_total_production_grid_india_report(
-        content=content
+        content=report
     )
     # Get total production for the whole country, from the 15-minute time series report.
     _15min_india_generation_aggregated_daily = (
-        parse_total_production_15min_grid_india_report(content=content)
+        parse_total_production_15min_grid_india_report(content=report)
     )
 
     # Compute the scaling factor that will be used to scale the 15-minute data so that its total matches the daily production value.
@@ -657,12 +693,12 @@ def parse_15m_production_grid_india_report(
     )
     # Scale the 15-minute data
     _15min_scaled_generation_df = scale_15min_production(
-        content=content, scaling_factor=generation_scaling_factor
+        content=report, scaling_factor=generation_scaling_factor
     )
 
     # Now, compute the share of the considered zone key in the India-level production, for each mode.
     zone_mode_share_out_of_country = compute_zone_key_share_per_mode_out_of_total(
-        content=content, zone_key=zone_key
+        content=report, zone_key=zone_key
     )
 
     # Scale the 15-minute by the share of the mode for the considered zone key out of the country-level production.
@@ -704,13 +740,16 @@ def parse_15m_production_grid_india_report(
     return all_data_points.to_list()
 
 
-def get_production_breakdown(content: bytes, zone_key: str) -> pd.DataFrame:
+def get_production_breakdown(
+    content: bytes | GridIndiaReport, zone_key: str
+) -> pd.DataFrame:
     """
     Computes the share of the zone key in the total production for each mode.
     Returns a dictionary with the mode as key and the share as value.
     We will then assume this percentage is uniform across the day.
     """
-    daily_generation_df = get_daily_generation_table(content)
+    report = _as_report(content)
+    daily_generation_df = get_daily_generation_table(report)
     if zone_key == "IN":
         zone_generation = daily_generation_df["All India"]
     else:
@@ -730,7 +769,7 @@ def get_production_breakdown(content: bytes, zone_key: str) -> pd.DataFrame:
     all_modes_except_wind_solar_df = all_modes_except_wind_solar.to_frame(name="value")
 
     # Get wind and solar for the considered zone key
-    wind_solar_india_df = get_wind_solar(content=content, zone_key=zone_key)
+    wind_solar_india_df = get_wind_solar(content=report, zone_key=zone_key)
 
     all_modes_df = pd.concat([all_modes_except_wind_solar_df, wind_solar_india_df])
     all_modes_df.index = all_modes_df.index.str.lower()
@@ -763,13 +802,14 @@ def get_production_breakdown(content: bytes, zone_key: str) -> pd.DataFrame:
 
 
 def compute_zone_key_share_per_mode_out_of_total(
-    content: bytes, zone_key: str
+    content: bytes | GridIndiaReport, zone_key: str
 ) -> pd.Series:
+    report = _as_report(content)
     country_production_breakdown = get_production_breakdown(
-        content=content, zone_key="IN"
+        content=report, zone_key="IN"
     )
     zone_production_breakdown = get_production_breakdown(
-        content=content, zone_key=zone_key
+        content=report, zone_key=zone_key
     )
 
     total_production_zone_share_out_of_country = (
@@ -791,8 +831,10 @@ def compute_zone_key_share_per_mode_out_of_total(
     )
 
 
-def scale_15min_production(content: bytes, scaling_factor: float) -> pd.DataFrame:
-    df = pd.read_excel(content, engine="xlrd", header=2, sheet_name="TimeSeries")
+def scale_15min_production(
+    content: bytes | GridIndiaReport, scaling_factor: float
+) -> pd.DataFrame:
+    df = _as_report(content).time_series_sheet
 
     KEYWORD_MAPPING = {
         "NUCLEAR": "nuclear",
@@ -813,11 +855,12 @@ def scale_15min_production(content: bytes, scaling_factor: float) -> pd.DataFram
                 dynamic_rename_mapping[col_name] = mode
                 break
 
-    df = df[list(dynamic_rename_mapping.keys()) + ["TIME"]]
-    df.rename(columns=dynamic_rename_mapping, inplace=True)
+    df = df[list(dynamic_rename_mapping.keys()) + ["TIME"]].rename(
+        columns=dynamic_rename_mapping
+    )
 
     # The first and last rows are not part of the time series and should be deleted.
-    df = df.iloc[1:-1].reset_index(drop=True)
+    df = df.iloc[1:-1].reset_index(drop=True).copy()
     mode_columns = list(dynamic_rename_mapping.values())
 
     # Ensure all mode columns are numeric before scaling
@@ -830,7 +873,7 @@ def scale_15min_production(content: bytes, scaling_factor: float) -> pd.DataFram
 
 
 def parse_daily_total_production_grid_india_report(
-    content: bytes,
+    content: bytes | GridIndiaReport,
 ) -> float:
     """
     Extract the total production across the whole country from the daily report.
@@ -847,16 +890,15 @@ def parse_daily_total_production_grid_india_report(
 
 
 def parse_total_production_15min_grid_india_report(
-    content: bytes,
+    content: bytes | GridIndiaReport,
 ) -> float:
     """
     Computes the total production from the 15-minute data, in MWh.
     """
-    df = pd.read_excel(content, engine="xlrd", header=2, sheet_name="TimeSeries")
+    df = _as_report(content).time_series_sheet
     total_gen_col = "TOTAL GENERATION\n(MW)"
-    df[total_gen_col] = pd.to_numeric(df[total_gen_col], errors="coerce")
-    df["15min_energy"] = df[total_gen_col] / 4
-    total_generation_from_15_min = df["15min_energy"].sum()
+    total_generation = pd.to_numeric(df[total_gen_col], errors="coerce")
+    total_generation_from_15_min = (total_generation / 4).sum()
     return float(total_generation_from_15_min)
 
 
