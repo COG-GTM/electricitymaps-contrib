@@ -1,13 +1,9 @@
 from dataclasses import dataclass
 from datetime import datetime
-from pathlib import Path
 
-from electricitymap.contrib.config.reading import read_zones_config
+from electricitymap.contrib.config import ZONES_CONFIG
 from electricitymap.contrib.types import ZoneKey
 
-CONFIG_DIR = Path(__file__).parent.parent.parent.parent.joinpath("config").resolve()
-
-ZONES_CONFIG = read_zones_config(CONFIG_DIR)
 # Get productionCapacity source to zones mapping
 CAPACITY_PARSER_SOURCE_TO_ZONES: dict[str, list[ZoneKey]] = {}
 for zone_id, zone_config in ZONES_CONFIG.items():
