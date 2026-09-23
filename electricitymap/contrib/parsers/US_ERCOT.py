@@ -308,7 +308,6 @@ def fetch_live_exchange(
 ) -> list:
     data_json = get_data(url=RT_EXCHANGE_URL, session=session)
     all_data_points = []
-    sortedZoneKeys = "->".join(sorted([zone_key1, zone_key2]))
     for item in data_json["data"]:
         data_point = {}
         data_point["datetime"] = datetime.fromtimestamp(
@@ -318,18 +317,6 @@ def fetch_live_exchange(
 
         all_data_points.append(data_point)
 
-    # aggregate data points in the same minute interval
-    aggregated_data_points = []
-    for dt in sorted({item["datetime"] for item in all_data_points}):
-        agg_data_point = {}
-        agg_data_point["datetime"] = dt
-        values_dt = [
-            item["netFlow"] for item in all_data_points if item["datetime"] == dt
-        ]
-        agg_data_point["netFlow"] = sum(values_dt) / len(values_dt)
-        agg_data_point["sortedZoneKeys"] = sortedZoneKeys
-        agg_data_point["source"] = SOURCE
-        aggregated_data_points.append(agg_data_point)
     validated_data_points = [x for x in all_data_points if validate_exchange(x, logger)]
     return validated_data_points
 
