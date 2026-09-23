@@ -8,7 +8,6 @@ from enum import Enum
 from logging import Logger
 from typing import Any
 
-import pandas as pd
 from pydantic import BaseModel, PrivateAttr, ValidationError, root_validator, validator
 
 from electricitymap.contrib.config import (
@@ -353,24 +352,22 @@ class AggregatableEvent(Event):
     """
 
     @staticmethod
-    def _unique_zone_key(df_view: pd.DataFrame) -> ZoneKey:
-        zone_key = df_view["zoneKey"].unique()
+    def _unique_zone_key(events: list["AggregatableEvent"]) -> ZoneKey:
+        zone_key = list(dict.fromkeys(event.zoneKey for event in events))
         if len(zone_key) > 1:
             raise ValueError(f"Cannot merge events from different zones: {zone_key}")
         return zone_key[0]
 
     @staticmethod
-    def _sources(df_view: pd.DataFrame) -> str:
-        sources = df_view["source"].unique()
-        flattened_sources = [
-            source.strip() for sublist in sources for source in sublist.split(",")
-        ]
-        unique_sources = sorted(set(flattened_sources))
+    def _sources(events: list["AggregatableEvent"]) -> str:
+        unique_sources = sorted(
+            {source.strip() for event in events for source in event.source.split(",")}
+        )
         return ", ".join(unique_sources)
 
     @staticmethod
-    def _unique_source_type(df_view: pd.DataFrame) -> EventSourceType:
-        source_type = df_view["sourceType"].unique()
+    def _unique_source_type(events: list["AggregatableEvent"]) -> EventSourceType:
+        source_type = list(dict.fromkeys(event.sourceType for event in events))
         if len(source_type) > 1:
             raise ValueError(
                 f"Cannot merge events from different source types: {source_type}"
@@ -378,23 +375,23 @@ class AggregatableEvent(Event):
         return source_type[0]
 
     @staticmethod
-    def _unique_datetime(df_view: pd.DataFrame) -> datetime:
-        target_datetime = df_view.datetime.unique()
+    def _unique_datetime(events: list["AggregatableEvent"]) -> datetime:
+        target_datetime = list(dict.fromkeys(event.datetime for event in events))
         if len(target_datetime) > 1:
             raise ValueError(
                 f"Cannot merge events from different datetimes: {target_datetime}"
             )
-        return target_datetime[0].to_pydatetime()
+        return target_datetime[0]
 
     @staticmethod
     def _aggregated_fields(
-        df_view: pd.DataFrame,
+        events: list["AggregatableEvent"],
     ) -> tuple[ZoneKey, str, EventSourceType, datetime]:
         return (
-            AggregatableEvent._unique_zone_key(df_view),
-            AggregatableEvent._sources(df_view),
-            AggregatableEvent._unique_source_type(df_view),
-            AggregatableEvent._unique_datetime(df_view),
+            AggregatableEvent._unique_zone_key(events),
+            AggregatableEvent._sources(events),
+            AggregatableEvent._unique_source_type(events),
+            AggregatableEvent._unique_datetime(events),
         )
 
     @staticmethod
@@ -665,24 +662,12 @@ class ProductionBreakdown(AggregatableEvent):
         """Merge ProductionBreakdown events into one."""
         if len(events) == 0:
             raise ValueError("Cannot aggregate empty list of events")
-        df_view = pd.DataFrame.from_records(
-            [
-                {
-                    "zoneKey": event.zoneKey,
-                    "datetime": event.datetime,
-                    "source": event.source,
-                    "sourceType": event.sourceType,
-                    "data": event,
-                }
-                for event in events
-            ]
-        )
         (
             zoneKey,
             sources,
             source_type,
             target_datetime,
-        ) = ProductionBreakdown._aggregated_fields(df_view)
+        ) = ProductionBreakdown._aggregated_fields(events)
 
         production_mix = ProductionMix.merge(
             [event.production for event in events if event.production is not None]
