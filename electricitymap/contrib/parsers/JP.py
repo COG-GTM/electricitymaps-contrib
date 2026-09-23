@@ -79,14 +79,20 @@ def fetch_production(
     # add a row to production for each entry in the dictionary:
 
     datalist = []
+    has_solar = "solar" in df.columns
+    # The wind capacity only depends on the year of the event.
+    capacity_per_year: dict[int, Any] = {}
 
-    for i in df.index:
-        capacity = get_wind_capacity(
-            df.loc[i, "datetime"].to_pydatetime(), zone_key, logger
-        )
+    for row in df.itertuples(index=False):
+        event_datetime = row.datetime.to_pydatetime()
+        if event_datetime.year not in capacity_per_year:
+            capacity_per_year[event_datetime.year] = get_wind_capacity(
+                event_datetime, zone_key, logger
+            )
+        capacity = capacity_per_year[event_datetime.year]
         data = {
             "zoneKey": zone_key,
-            "datetime": df.loc[i, "datetime"].to_pydatetime(),
+            "datetime": event_datetime,
             "production": {
                 "biomass": None,
                 "coal": None,
@@ -94,10 +100,10 @@ def fetch_production(
                 "hydro": None,
                 "nuclear": None,
                 "oil": None,
-                "solar": df.loc[i, "solar"] if "solar" in df.columns else None,
+                "solar": row.solar if has_solar else None,
                 "wind": None,
                 "geothermal": None,
-                "unknown": df.loc[i, "unknown"],
+                "unknown": row.unknown,
             },
             "capacity": {"wind": capacity if capacity is not None else {}},
             "source": f"occto.or.jp, {sources[zone_key]}",
@@ -255,24 +261,21 @@ def fetch_price(
     df["Date"] = pd.to_datetime(df["Date"], format="%Y/%m/%d").dt.date
     df = df[(df["Date"] >= start.date()) & (df["Date"] <= target_datetime.date())]
 
-    df["datetime"] = df.apply(
-        lambda row: (
-            datetime.combine(row["Date"], datetime.min.time()).replace(tzinfo=ZONE_INFO)
-            + timedelta(minutes=30 * (row["Period"] - 1))
-        ),
-        axis=1,
+    df["datetime"] = pd.to_datetime(df["Date"]) + pd.to_timedelta(
+        30 * (df["Period"] - 1), unit="m"
     )
+    df["datetime"] = df["datetime"].dt.tz_localize(ZONE_INFO)
 
     data = []
-    for row in df.iterrows():
+    for event_datetime, price in df[["datetime", zone_key]].itertuples(
+        index=False, name=None
+    ):
         data.append(
             {
                 "zoneKey": zone_key,
                 "currency": "JPY",
-                "datetime": row[1]["datetime"].to_pydatetime(),
-                "price": round(
-                    int(1000 * row[1][zone_key]), -1
-                ),  # Convert from JPY/kWh to JPY/MWh
+                "datetime": event_datetime.to_pydatetime(),
+                "price": round(int(1000 * price), -1),  # Convert JPY/kWh to JPY/MWh
                 "source": "jepx.jp",
             }
         )
