@@ -4,7 +4,6 @@ from logging import Logger, getLogger
 from typing import Any
 
 import pandas as pd
-import requests
 from requests import Session
 
 from electricitymap.contrib.lib.models.event_lists import ProductionBreakdownList
@@ -116,7 +115,7 @@ def _kwh_to_mw(kwh: float, granularity: int) -> float:
 # It seems the API can take max itemPerPage 200. We fetch x items per page as this is: x = (# types * 4 quaters * n hours) < 200
 # If the itemsPerPage is not a multiple of the types the API sometime skips a type, sometimes duplicates a type!
 # The API does not include the last page number in the response, so we need to keep querying until we get an empty response
-def call_api(target_datetime: datetime, forecast: bool = False):
+def call_api(session: Session, target_datetime: datetime, forecast: bool = False):
     is_last_page = False
     pageNum = 1
     results = []
@@ -160,16 +159,17 @@ def call_api(target_datetime: datetime, forecast: bool = False):
         }
 
         headers = {"X-AUTH-TOKEN": get_token("NED_TOKEN"), "accept": "application/json"}
-        response = requests.get(URL, params=params, headers=headers)
+        response = session.get(URL, params=params, headers=headers)
         if not response.ok:
             raise ParserException(
                 parser="NED.py",
                 message=f"Failed to fetch NED data: {response.status_code}, err: {response.text}",
             )
-        results += response.json()
+        data = response.json()
+        results += data
         pageNum += 1
 
-        if response.json() == [] or pageNum > 30:
+        if data == [] or pageNum > 30:
             is_last_page = True
 
     return results
@@ -278,7 +278,7 @@ def fetch_production(
     session = session or Session()
     target_datetime = target_datetime or datetime.now(timezone.utc)
 
-    json_data = call_api(target_datetime)
+    json_data = call_api(session, target_datetime)
     NED_data = format_data(json_data, logger)
 
     all_dates = [item.get("datetime") for item in NED_data.to_list()]
@@ -308,7 +308,7 @@ def fetch_production_forecast(
 ) -> list:
     session = session or Session()
     target_datetime = target_datetime or datetime.now(timezone.utc)
-    json_data = call_api(target_datetime, forecast=True)
+    json_data = call_api(session, target_datetime, forecast=True)
     NED_data = format_data(json_data, logger, forecast=True)
 
     return NED_data.to_list()
