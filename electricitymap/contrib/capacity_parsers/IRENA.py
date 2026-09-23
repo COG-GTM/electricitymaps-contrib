@@ -122,8 +122,7 @@ def get_data_from_url(
         r: Response = session.post(url, data=json_data)
         if r.status_code == 200:
             data = r.json()
-        else:
-            continue
+            break
     if not data:
         raise ValueError(f"Could not fetch data for {target_datetime.year}")
     return data["data"]
