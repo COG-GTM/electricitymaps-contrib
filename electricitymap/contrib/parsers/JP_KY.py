@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import io
 import re
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from logging import Logger, getLogger
 from typing import Any
@@ -9,7 +10,7 @@ from zoneinfo import ZoneInfo
 import pandas as pd
 
 # The request library is used to fetch content through HTTP
-from requests import Session, get
+from requests import Session
 
 from electricitymap.contrib.config import ZoneKey
 from electricitymap.contrib.lib.models.event_lists import ProductionBreakdownList
@@ -30,11 +31,34 @@ def fetch_production(
         raise NotImplementedError("This parser is not yet able to parse past dates")
 
     production_list = ProductionBreakdownList(logger)
+    ses = session or Session()
 
     # url for consumption and solar
     url = f"https://www.kyuden.co.jp/td_power_usages/csv/juyo-hourly-{datetime.now(tz=TIMEZONE).strftime('%Y%m%d')}.csv"
-    response = get(url)
-    content = response.text
+
+    # two nuclear power plants at Sendai and Genkai
+    sendai_url = (
+        "http://www.kyuden.co.jp/php/nuclear/sendai/rename.php?"
+        "A=s_power.fdat&B=ncp_state.fdat&_=1520532401043"
+    )
+    genkai_url = (
+        "http://www.kyuden.co.jp/php/nuclear/genkai/rename.php?"
+        "A=g_power.fdat&B=ncp_state.fdat&_=1520532904073"
+    )
+
+    # These requests are independent of each other, so they are issued concurrently
+    with ThreadPoolExecutor() as executor:
+        content_future = executor.submit(lambda: ses.get(url).text)
+        sendai_future = executor.submit(lambda: ses.get(sendai_url).text)
+        genkai_future = executor.submit(lambda: ses.get(genkai_url).text)
+        exchanges_future = executor.submit(
+            occtonet.fetch_exchange, "JP-KY", "JP-CG", ses
+        )
+
+        content = content_future.result()
+        sendai_raw_text = sendai_future.result()
+        genkai_raw_text = genkai_future.result()
+        exchanges = exchanges_future.result()
 
     # Filter out the irrelevant data
     start_idx = content.rfind("DATE,TIME")
@@ -60,19 +84,6 @@ def fetch_production(
     consumption = last_complete_row["consumption"].astype(float) * 10
     solar = last_complete_row["solar"].astype(float) * 10
 
-    # add two nuclear power plants at Sendai and Genkai
-    sendai_url = (
-        "http://www.kyuden.co.jp/php/nuclear/sendai/rename.php?"
-        "A=s_power.fdat&B=ncp_state.fdat&_=1520532401043"
-    )
-    genkai_url = (
-        "http://www.kyuden.co.jp/php/nuclear/genkai/rename.php?"
-        "A=g_power.fdat&B=ncp_state.fdat&_=1520532904073"
-    )
-
-    sendai_raw_text = get(sendai_url).text
-    genkai_raw_text = get(genkai_url).text
-
     regex = r"(?<=gouki=)[-+]?[.]?[\d]+(?:,\d\d\d)*[\.]?\d*" + r"(?:[eE][-+]?\d+)?(?=&)"
     sendai_values = re.findall(regex, sendai_raw_text)
     genkai_values = re.findall(regex, genkai_raw_text)
@@ -85,7 +96,6 @@ def fetch_production(
     nuclear *= 10
 
     # add the exchange JP-CG->JP-KY
-    exchanges = occtonet.fetch_exchange("JP-KY", "JP-CG")
     # find the nearest exchanges in time to consumption timestamp
     nearest_exchanges = sorted(
         exchanges, key=lambda exchange: abs(exchange["datetime"] - dt)
