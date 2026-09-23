@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 from logging import Logger, getLogger
 from zoneinfo import ZoneInfo
 
+import numpy as np
 import pandas as pd
 import requests
 from bs4 import BeautifulSoup
@@ -78,6 +79,15 @@ MAP_MODES = {
 SOURCE = "rte-france.com"
 
 
+def map_strict(series: pd.Series, mapping: dict, label: str) -> pd.Series:
+    """Vectorized dict lookup that fails on values missing from the map."""
+    mapped = series.map(mapping)
+    if mapped.isna().any():
+        unknown = sorted(set(series[mapped.isna()]))
+        raise ParserException("ECO2MIX.py", f"Unknown {label}: {unknown}")
+    return mapped
+
+
 def query(url_type_arg, session: Session, target_datetime: datetime | None):
     if target_datetime:
         date_to = target_datetime.replace(tzinfo=ZoneInfo("Europe/Paris"))
@@ -136,11 +146,11 @@ def parse_production_to_df(text):
     # Remove invalid granularities
     df = df[df.granularite == "Global"].drop("granularite", axis=1)
     # Create key (will crash if a mode is not in the map and ensures we coded this right)
-    df["key"] = df.v.apply(lambda k: MAP_MODES[k])
+    df["key"] = map_strict(df.v, MAP_MODES, "mode")
     # Filter out invalid modes
     df = df[df.key != "IGNORED"]
     # Compute zone_key
-    df["zone_key"] = df["perimetre"].apply(lambda k: MAP_ZONES[k])
+    df["zone_key"] = map_strict(df["perimetre"], MAP_ZONES, "zone")
     # Compute values
     df.value = df.value.replace("ND", math.nan).replace("-", math.nan).astype("float")
     # Storage works the other way around (RTE treats storage as production)
@@ -230,38 +240,34 @@ def parse_exchange_to_df(text):
     df = df[df.granularite == "Global"].drop("granularite", axis=1)
     # Compute values
     df.value = df.value.replace("ND", math.nan).replace("-", math.nan).astype("float")
-    df["zone_key_other"] = df.v.apply(lambda x: MAP_ZONES[x.split("_")[1]])
-    df["zone_key"] = df.perimetre.apply(lambda k: MAP_ZONES[k])
-    df["sorted_zone_keys"] = df.apply(
-        lambda row: "->".join(sorted([row["zone_key"], row["zone_key_other"]])), axis=1
+    df["zone_key_other"] = map_strict(
+        df.v.str.split("_").str[1], MAP_ZONES, "exchange zone"
     )
+    df["zone_key"] = map_strict(df.perimetre, MAP_ZONES, "zone")
+    is_first = df.zone_key <= df.zone_key_other
+    first_zone_key = df.zone_key.where(is_first, df.zone_key_other)
+    second_zone_key = df.zone_key_other.where(is_first, df.zone_key)
+    df["sorted_zone_keys"] = first_zone_key + "->" + second_zone_key
 
     # Data comes in for all zones, which means on zone's import
     # will be another's export. We therefore only keep one of them
-    df = df[
-        df.perimetre
-        == df.sorted_zone_keys.apply(
-            # make sure we only selected rows where `perimetre`
-            # is one of the FR- keys of the pair (to make sure we capture
-            # exchange with neighboring countries)
-            lambda k: [
-                zone_key.replace("FR-", "")
-                for zone_key in k.split("->")
-                if "FR-" in zone_key
-            ][0]
-        )
-    ]
+    # by making sure we only select rows where `perimetre` is one of
+    # the FR- keys of the pair (to make sure we capture exchange with
+    # neighboring countries)
+    first_is_fr = first_zone_key.str.startswith("FR-")
+    if not (first_is_fr | second_zone_key.str.startswith("FR-")).all():
+        raise ParserException("ECO2MIX.py", "Exchange without a FR subzone in the pair")
+    fr_zone_key = first_zone_key.where(first_is_fr, second_zone_key)
+    df = df[df.perimetre == fr_zone_key.str.replace("FR-", "", regex=False)]
+
     # RTE defines flow in the follow way:
     # `value` represents flow from `zone_key_other` to `zone_key` (`perimetre`)
     # We here flip the sign if the alphabetical order requires it
     # (e.g. if zone_key is not the second key)
-    df["net_flow"] = df.apply(
-        lambda row: (
-            row["value"]
-            if row["sorted_zone_keys"].split("->")[1] == row["zone_key"]
-            else row["value"] * -1
-        ),
-        axis=1,
+    df["net_flow"] = np.where(
+        df.sorted_zone_keys.str.split("->").str[1] == df.zone_key,
+        df.value,
+        df.value * -1,
     )
     return df
 
