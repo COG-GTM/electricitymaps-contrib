@@ -94,9 +94,10 @@ def _fetch_api_data(
     ],
     params: dict,
     session: Session,
+    api_subscription_key: str,
 ) -> dict:
     headers = {
-        "Ocp-Apim-Subscription-Key": _get_api_subscription_key(session=session),
+        "Ocp-Apim-Subscription-Key": api_subscription_key,
         "Accept-Encoding": "identity",
     }
     url = f"{US_PROXY}/{DATA_PATH}/{kind}"
@@ -133,7 +134,12 @@ def fetch_consumption_forecast(
     session = session or Session()
     # startRow must be set if forecast_area is set. RTO_COMBINED is area for whole PJM zone.
     params = {"download": True, "startRow": 1, "forecast_area": "RTO_COMBINED"}
-    data = _fetch_api_data(kind="load_frcstd_7_day", params=params, session=session)
+    data = _fetch_api_data(
+        kind="load_frcstd_7_day",
+        params=params,
+        session=session,
+        api_subscription_key=_get_api_subscription_key(session=session),
+    )
 
     consumption_list = TotalConsumptionList(logger)
     for elem in data:
@@ -173,7 +179,12 @@ def fetch_production(
         "fields": "datetime_beginning_utc,fuel_type,mw",
         "datetime_beginning_utc": target_datetime.strftime("%Y-%m-%dT%H:00:00.0000000"),
     }
-    resp_data = _fetch_api_data(kind="gen_by_fuel", params=params, session=session)
+    resp_data = _fetch_api_data(
+        kind="gen_by_fuel",
+        params=params,
+        session=session,
+        api_subscription_key=_get_api_subscription_key(session=session),
+    )
 
     items = resp_data.get("items", [])
 
@@ -231,13 +242,21 @@ def fetch_wind_solar_forecasts(
         "datetime_beginning_utc": target_datetime.strftime("%Y-%m-%dT%H:00:00.0000000"),
     }
 
+    api_subscription_key = _get_api_subscription_key(session=session)
+
     resp_data_wind = _fetch_api_data(
-        kind="hourly_wind_power_forecast", params=params, session=session
+        kind="hourly_wind_power_forecast",
+        params=params,
+        session=session,
+        api_subscription_key=api_subscription_key,
     )
     items_wind = resp_data_wind.get("items", [])
 
     resp_data_solar = _fetch_api_data(
-        kind="hourly_solar_power_forecast", params=params, session=session
+        kind="hourly_solar_power_forecast",
+        params=params,
+        session=session,
+        api_subscription_key=api_subscription_key,
     )
     items_solar = resp_data_solar.get("items", [])
 
