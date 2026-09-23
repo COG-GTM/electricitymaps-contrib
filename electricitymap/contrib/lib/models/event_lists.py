@@ -309,7 +309,9 @@ class ProductionBreakdownList(AggregatableEventList[ProductionBreakdown]):
         ]
         ProductionBreakdownList.get_zone_source_type_from_events(all_events)
 
-        events_by_datetime: dict[datetime, list[ProductionBreakdown]] = defaultdict(list)
+        events_by_datetime: dict[datetime, list[ProductionBreakdown]] = defaultdict(
+            list
+        )
         for event in all_events:
             events_by_datetime[event.datetime].append(event)
 
