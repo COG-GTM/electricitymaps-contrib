@@ -2,13 +2,12 @@
 import datetime as dt
 import math
 from abc import ABC, abstractmethod
-from collections.abc import Set
+from collections.abc import Sequence, Set
 from datetime import datetime, timedelta, timezone
 from enum import Enum
 from logging import Logger
 from typing import Any
 
-import pandas as pd
 from pydantic import BaseModel, PrivateAttr, ValidationError, root_validator, validator
 
 from electricitymap.contrib.config import (
@@ -353,48 +352,48 @@ class AggregatableEvent(Event):
     """
 
     @staticmethod
-    def _unique_zone_key(df_view: pd.DataFrame) -> ZoneKey:
-        zone_key = df_view["zoneKey"].unique()
-        if len(zone_key) > 1:
-            raise ValueError(f"Cannot merge events from different zones: {zone_key}")
-        return zone_key[0]
+    def _unique_zone_key(events: Sequence["AggregatableEvent"]) -> ZoneKey:
+        zone_keys = list(dict.fromkeys(event.zoneKey for event in events))
+        if len(zone_keys) > 1:
+            raise ValueError(f"Cannot merge events from different zones: {zone_keys}")
+        return zone_keys[0]
 
     @staticmethod
-    def _sources(df_view: pd.DataFrame) -> str:
-        sources = df_view["source"].unique()
-        flattened_sources = [
-            source.strip() for sublist in sources for source in sublist.split(",")
-        ]
-        unique_sources = sorted(set(flattened_sources))
+    def _sources(events: Sequence["AggregatableEvent"]) -> str:
+        unique_sources = sorted(
+            {source.strip() for event in events for source in event.source.split(",")}
+        )
         return ", ".join(unique_sources)
 
     @staticmethod
-    def _unique_source_type(df_view: pd.DataFrame) -> EventSourceType:
-        source_type = df_view["sourceType"].unique()
-        if len(source_type) > 1:
+    def _unique_source_type(
+        events: Sequence["AggregatableEvent"],
+    ) -> EventSourceType:
+        source_types = list(dict.fromkeys(event.sourceType for event in events))
+        if len(source_types) > 1:
             raise ValueError(
-                f"Cannot merge events from different source types: {source_type}"
+                f"Cannot merge events from different source types: {source_types}"
             )
-        return source_type[0]
+        return source_types[0]
 
     @staticmethod
-    def _unique_datetime(df_view: pd.DataFrame) -> datetime:
-        target_datetime = df_view.datetime.unique()
-        if len(target_datetime) > 1:
+    def _unique_datetime(events: Sequence["AggregatableEvent"]) -> datetime:
+        target_datetimes = list(dict.fromkeys(event.datetime for event in events))
+        if len(target_datetimes) > 1:
             raise ValueError(
-                f"Cannot merge events from different datetimes: {target_datetime}"
+                f"Cannot merge events from different datetimes: {target_datetimes}"
             )
-        return target_datetime[0].to_pydatetime()
+        return target_datetimes[0]
 
     @staticmethod
     def _aggregated_fields(
-        df_view: pd.DataFrame,
+        events: Sequence["AggregatableEvent"],
     ) -> tuple[ZoneKey, str, EventSourceType, datetime]:
         return (
-            AggregatableEvent._unique_zone_key(df_view),
-            AggregatableEvent._sources(df_view),
-            AggregatableEvent._unique_source_type(df_view),
-            AggregatableEvent._unique_datetime(df_view),
+            AggregatableEvent._unique_zone_key(events),
+            AggregatableEvent._sources(events),
+            AggregatableEvent._unique_source_type(events),
+            AggregatableEvent._unique_datetime(events),
         )
 
     @staticmethod
@@ -665,24 +664,12 @@ class ProductionBreakdown(AggregatableEvent):
         """Merge ProductionBreakdown events into one."""
         if len(events) == 0:
             raise ValueError("Cannot aggregate empty list of events")
-        df_view = pd.DataFrame.from_records(
-            [
-                {
-                    "zoneKey": event.zoneKey,
-                    "datetime": event.datetime,
-                    "source": event.source,
-                    "sourceType": event.sourceType,
-                    "data": event,
-                }
-                for event in events
-            ]
-        )
         (
             zoneKey,
             sources,
             source_type,
             target_datetime,
-        ) = ProductionBreakdown._aggregated_fields(df_view)
+        ) = ProductionBreakdown._aggregated_fields(events)
 
         production_mix = ProductionMix.merge(
             [event.production for event in events if event.production is not None]

@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from collections import defaultdict
 from collections.abc import Sequence
 from datetime import datetime
 from logging import Logger
@@ -71,23 +72,6 @@ class EventList(ABC, Generic[EventType]):
             [event.to_dict() for event in self.events], key=itemgetter("datetime")
         )
 
-    @property
-    def dataframe(self) -> pd.DataFrame:
-        """Gives the dataframe representation of the events, indexed by datetime."""
-        return pd.DataFrame.from_records(
-            [
-                {
-                    "datetime": event.datetime,
-                    "zoneKey": event.zoneKey,
-                    "source": event.source,
-                    "sourceType": event.sourceType,
-                    "data": event,
-                }
-                for event in self.events
-                if len(self.events) > 0
-            ]
-        ).set_index("datetime")
-
 
 class AggregatableEventList(EventList[EventType], ABC, Generic[EventType]):
     """An abstract class to supercharge event lists with aggregation capabilities."""
@@ -119,6 +103,30 @@ class AggregatableEventList(EventList[EventType], ABC, Generic[EventType]):
             AggregatableEventList._get_aggregated_sources(events),
             AggregatableEventList._get_unique_source_type(events),
         )
+
+    @classmethod
+    def get_zone_source_type_from_events(
+        cls,
+        events: Sequence[Event],
+    ) -> tuple[ZoneKey, str, EventSourceType]:
+        """
+        Given a list of events, return the unique zone, the aggregated sources and the unique source type.
+        Raises an error if there are multiple zones or source types.
+        """
+        zones = list(dict.fromkeys(event.zoneKey for event in events))
+        if len(zones) != 1:
+            raise ValueError(
+                f"Trying to merge {cls.__name__} from multiple zones \
+                , got {len(zones)}: {', '.join(zones)}"
+            )
+        source_types = list(dict.fromkeys(event.sourceType for event in events))
+        if len(source_types) != 1:
+            raise ValueError(
+                f"Trying to merge {cls.__name__} from multiple source types \
+                , got {len(source_types)}: {', '.join(source_types)}"
+            )
+        sources = ", ".join(dict.fromkeys(event.source for event in events))
+        return zones[0], sources, source_types[0]
 
     @classmethod
     def _get_unique_zone(cls, events: pd.DataFrame) -> ZoneKey:
@@ -294,27 +302,39 @@ class ProductionBreakdownList(AggregatableEventList[ProductionBreakdown]):
         ):
             return production_breakdowns
         len_ungrouped_production_breakdowns = len(ungrouped_production_breakdowns)
-        df = pd.concat(
-            [
-                production_breakdowns.dataframe
-                for production_breakdowns in ungrouped_production_breakdowns
-                if len(production_breakdowns.events) > 0
-            ]
-        )
-        _, _, _ = ProductionBreakdownList.get_zone_source_type(df)
+        all_events = [
+            event
+            for production_breakdown in ungrouped_production_breakdowns
+            for event in production_breakdown.events
+        ]
+        ProductionBreakdownList.get_zone_source_type_from_events(all_events)
 
-        df = df.drop(columns=["source", "sourceType", "zoneKey"])
-        df = df.groupby(level=0, dropna=False)["data"].apply(list)
+        events_by_datetime: dict[datetime, list[ProductionBreakdown]] = defaultdict(list)
+        for event in all_events:
+            events_by_datetime[event.datetime].append(event)
+
+        grouped_events = [
+            events_by_datetime[dt] for dt in sorted(events_by_datetime.keys())
+        ]
         if matching_timestamps_only:
+            discarded = [
+                events
+                for events in grouped_events
+                if len(events) != len_ungrouped_production_breakdowns
+            ]
             logger.info(
                 f"Filtering production breakdowns to keep \
                 only the timestamps where all the production breakdowns \
-                have data, {len(df[df.apply(lambda x: len(x) != len_ungrouped_production_breakdowns)])}\
+                have data, {len(discarded)}\
                 points where discarded."
             )
-            df = df[df.apply(lambda x: len(x) == len_ungrouped_production_breakdowns)]
-        for row in df:
-            prod = ProductionBreakdown.aggregate(row)
+            grouped_events = [
+                events
+                for events in grouped_events
+                if len(events) == len_ungrouped_production_breakdowns
+            ]
+        for events in grouped_events:
+            prod = ProductionBreakdown.aggregate(events)
             production_breakdowns.events.append(prod)
         return production_breakdowns
 
