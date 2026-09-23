@@ -2,6 +2,7 @@ import json
 import os
 from datetime import datetime, timezone
 from importlib import resources
+from typing import Any
 
 import pytest
 from requests_mock import ANY, GET
@@ -14,6 +15,33 @@ from electricitymap.contrib.types import ZoneKey
 @pytest.fixture(autouse=True)
 def eia_key_env():
     os.environ["EIA_KEY"] = "token"
+
+
+def _load_mock(filename: str) -> dict[str, Any]:
+    return json.loads(
+        resources.files("electricitymap.contrib.parsers.tests.mocks.EIA")
+        .joinpath(filename)
+        .read_text()
+    )
+
+
+def production_mix_response(
+    default_mock: str, mocks_by_fuel_code: dict[str, str] | None = None
+) -> dict[str, Any]:
+    """
+    Build the response of a single fuel-type-data request, which covers every
+    fuel type the parser asks for. The datapoints of `default_mock` are used
+    for the fuel types absent from `mocks_by_fuel_code`.
+    """
+    mocks_by_fuel_code = mocks_by_fuel_code or {}
+    response = _load_mock(default_mock)
+    data = []
+    for fuel_code in EIA.TYPES.values():
+        mock = mocks_by_fuel_code.get(fuel_code, default_mock)
+        for datapoint in _load_mock(mock)["response"]["data"]:
+            data.append({**datapoint, "fueltype": fuel_code})
+    response["response"]["data"] = data
+    return response
 
 
 def test_parse_hourly_interval():
@@ -39,124 +67,67 @@ def test_fetch_production_mix(adapter, session, snapshot):
     adapter.register_uri(
         GET,
         ANY,
-        json=json.loads(
-            resources.files("electricitymap.contrib.parsers.tests.mocks.EIA")
-            .joinpath("US_NW_AVRN-wind.json")
-            .read_text()
-        ),
+        json=production_mix_response("US_NW_AVRN-wind.json"),
     )
     data_list = EIA.fetch_production_mix(ZoneKey("US-NW-PGE"), session)
 
     assert data_list == snapshot
 
 
+def test_production_mix_is_fetched_in_a_single_request(adapter, session):
+    adapter.register_uri(
+        GET,
+        ANY,
+        json=production_mix_response("US_NW_AVRN-wind.json"),
+    )
+    EIA.fetch_production_mix(ZoneKey("US-NW-PGE"), session)
+
+    assert len(adapter.request_history) == 1
+    requested_fuel_types = adapter.request_history[0].qs["facets[fueltype][]"]
+    assert sorted(requested_fuel_types) == sorted(
+        code.lower() for code in EIA.TYPES.values()
+    )
+
+
 def test_US_NW_AVRN_rerouting(adapter, session, snapshot):
     adapter.register_uri(
         GET,
         ANY,
-        json=json.loads(
-            resources.files("electricitymap.contrib.parsers.tests.mocks.EIA")
-            .joinpath("US_NW_AVRN-other.json")
-            .read_text()
+        json=production_mix_response("US_NW_AVRN-other.json"),
+    )
+    adapter.register_uri(
+        GET,
+        EIA.PRODUCTION_MIX.format("AVRN"),
+        json=production_mix_response(
+            "US_NW_AVRN-other.json",
+            {"WND": "US_NW_AVRN-wind.json", "NG": "US_NW_AVRN-gas.json"},
         ),
     )
     adapter.register_uri(
         GET,
-        EIA.PRODUCTION_MIX.format("AVRN", "WND"),
-        json=json.loads(
-            resources.files("electricitymap.contrib.parsers.tests.mocks.EIA")
-            .joinpath("US_NW_AVRN-wind.json")
-            .read_text()
+        EIA.PRODUCTION_MIX.format("PACW"),
+        json=production_mix_response(
+            "US_NW_AVRN-other.json",
+            {
+                "NG": "US_NW_PACW-gas.json",
+                "WAT": "US_SMTH-coal.json",
+                "SUN": "US_SMTH-coal.json",
+                "WND": "US_SMTH-coal.json",
+            },
         ),
     )
     adapter.register_uri(
         GET,
-        EIA.PRODUCTION_MIX.format("PACW", "NG"),
-        json=json.loads(
-            resources.files("electricitymap.contrib.parsers.tests.mocks.EIA")
-            .joinpath("US_NW_PACW-gas.json")
-            .read_text()
-        ),
-    )
-    adapter.register_uri(
-        GET,
-        EIA.PRODUCTION_MIX.format("PACW", "WAT"),
-        json=json.loads(
-            resources.files("electricitymap.contrib.parsers.tests.mocks.EIA")
-            .joinpath("US_SMTH-coal.json")
-            .read_text()
-        ),
-    )
-    adapter.register_uri(
-        GET,
-        EIA.PRODUCTION_MIX.format("PACW", "SUN"),
-        json=json.loads(
-            resources.files("electricitymap.contrib.parsers.tests.mocks.EIA")
-            .joinpath("US_SMTH-coal.json")
-            .read_text()
-        ),
-    )
-    adapter.register_uri(
-        GET,
-        EIA.PRODUCTION_MIX.format("PACW", "WND"),
-        json=json.loads(
-            resources.files("electricitymap.contrib.parsers.tests.mocks.EIA")
-            .joinpath("US_SMTH-coal.json")
-            .read_text()
-        ),
-    )
-    adapter.register_uri(
-        GET,
-        EIA.PRODUCTION_MIX.format("BPAT", "WND"),
-        json=json.loads(
-            resources.files("electricitymap.contrib.parsers.tests.mocks.EIA")
-            .joinpath("US_NW_BPAT-wind.json")
-            .read_text()
-        ),
-    )
-    adapter.register_uri(
-        GET,
-        EIA.PRODUCTION_MIX.format("BPAT", "NG"),
-        json=json.loads(
-            resources.files("electricitymap.contrib.parsers.tests.mocks.EIA")
-            .joinpath("US_SMTH-coal.json")
-            .read_text()
-        ),
-    )
-    adapter.register_uri(
-        GET,
-        EIA.PRODUCTION_MIX.format("BPAT", "WAT"),
-        json=json.loads(
-            resources.files("electricitymap.contrib.parsers.tests.mocks.EIA")
-            .joinpath("US_SMTH-coal.json")
-            .read_text()
-        ),
-    )
-    adapter.register_uri(
-        GET,
-        EIA.PRODUCTION_MIX.format("BPAT", "NUC"),
-        json=json.loads(
-            resources.files("electricitymap.contrib.parsers.tests.mocks.EIA")
-            .joinpath("US_SMTH-coal.json")
-            .read_text()
-        ),
-    )
-    adapter.register_uri(
-        GET,
-        EIA.PRODUCTION_MIX.format("BPAT", "SUN"),
-        json=json.loads(
-            resources.files("electricitymap.contrib.parsers.tests.mocks.EIA")
-            .joinpath("US_SMTH-coal.json")
-            .read_text()
-        ),
-    )
-    adapter.register_uri(
-        GET,
-        EIA.PRODUCTION_MIX.format("AVRN", "NG"),
-        json=json.loads(
-            resources.files("electricitymap.contrib.parsers.tests.mocks.EIA")
-            .joinpath("US_NW_AVRN-gas.json")
-            .read_text()
+        EIA.PRODUCTION_MIX.format("BPAT"),
+        json=production_mix_response(
+            "US_NW_AVRN-other.json",
+            {
+                "WND": "US_NW_BPAT-wind.json",
+                "NG": "US_SMTH-coal.json",
+                "WAT": "US_SMTH-coal.json",
+                "NUC": "US_SMTH-coal.json",
+                "SUN": "US_SMTH-coal.json",
+            },
         ),
     )
 
@@ -170,118 +141,36 @@ def test_US_CAR_SC_nuclear_split(adapter, session, snapshot):
     adapter.register_uri(
         GET,
         ANY,
-        json=json.loads(
-            resources.files("electricitymap.contrib.parsers.tests.mocks.EIA")
-            .joinpath("US_NW_AVRN-other.json")
-            .read_text()
+        json=production_mix_response("US_NW_AVRN-other.json"),
+    )
+    adapter.register_uri(
+        GET,
+        EIA.PRODUCTION_MIX.format("SC"),
+        json=production_mix_response(
+            "US_NW_AVRN-other.json",
+            {
+                "COL": "US_SMTH-coal.json",
+                "NG": "US_SMTH-coal.json",
+                "WAT": "US_SMTH-coal.json",
+                "OIL": "US_SMTH-coal.json",
+                "SUN": "US_SMTH-coal.json",
+                "NUC": "US_CAR_SC-nuclear.json",
+            },
         ),
     )
     adapter.register_uri(
         GET,
-        EIA.PRODUCTION_MIX.format("SC", "COL"),
-        json=json.loads(
-            resources.files("electricitymap.contrib.parsers.tests.mocks.EIA")
-            .joinpath("US_SMTH-coal.json")
-            .read_text()
-        ),
-    )
-    adapter.register_uri(
-        GET,
-        EIA.PRODUCTION_MIX.format("SC", "NG"),
-        json=json.loads(
-            resources.files("electricitymap.contrib.parsers.tests.mocks.EIA")
-            .joinpath("US_SMTH-coal.json")
-            .read_text()
-        ),
-    )
-    adapter.register_uri(
-        GET,
-        EIA.PRODUCTION_MIX.format("SC", "WAT"),
-        json=json.loads(
-            resources.files("electricitymap.contrib.parsers.tests.mocks.EIA")
-            .joinpath("US_SMTH-coal.json")
-            .read_text()
-        ),
-    )
-    adapter.register_uri(
-        GET,
-        EIA.PRODUCTION_MIX.format("SC", "OIL"),
-        json=json.loads(
-            resources.files("electricitymap.contrib.parsers.tests.mocks.EIA")
-            .joinpath("US_SMTH-coal.json")
-            .read_text()
-        ),
-    )
-    adapter.register_uri(
-        GET,
-        EIA.PRODUCTION_MIX.format("SC", "SUN"),
-        json=json.loads(
-            resources.files("electricitymap.contrib.parsers.tests.mocks.EIA")
-            .joinpath("US_SMTH-coal.json")
-            .read_text()
-        ),
-    )
-    adapter.register_uri(
-        GET,
-        EIA.PRODUCTION_MIX.format("SC", "NUC"),
-        json=json.loads(
-            resources.files("electricitymap.contrib.parsers.tests.mocks.EIA")
-            .joinpath("US_CAR_SC-nuclear.json")
-            .read_text()
-        ),
-    )
-    adapter.register_uri(
-        GET,
-        EIA.PRODUCTION_MIX.format("SCEG", "NUC"),
-        json=json.loads(
-            resources.files("electricitymap.contrib.parsers.tests.mocks.EIA")
-            .joinpath("US_CAR_SCEG-nuclear.json")
-            .read_text()
-        ),
-    )
-    adapter.register_uri(
-        GET,
-        EIA.PRODUCTION_MIX.format("SCEG", "COL"),
-        json=json.loads(
-            resources.files("electricitymap.contrib.parsers.tests.mocks.EIA")
-            .joinpath("US_SMTH-coal.json")
-            .read_text()
-        ),
-    )
-    adapter.register_uri(
-        GET,
-        EIA.PRODUCTION_MIX.format("SCEG", "NG"),
-        json=json.loads(
-            resources.files("electricitymap.contrib.parsers.tests.mocks.EIA")
-            .joinpath("US_SMTH-coal.json")
-            .read_text()
-        ),
-    )
-    adapter.register_uri(
-        GET,
-        EIA.PRODUCTION_MIX.format("SCEG", "WAT"),
-        json=json.loads(
-            resources.files("electricitymap.contrib.parsers.tests.mocks.EIA")
-            .joinpath("US_SMTH-coal.json")
-            .read_text()
-        ),
-    )
-    adapter.register_uri(
-        GET,
-        EIA.PRODUCTION_MIX.format("SCEG", "OIL"),
-        json=json.loads(
-            resources.files("electricitymap.contrib.parsers.tests.mocks.EIA")
-            .joinpath("US_SMTH-coal.json")
-            .read_text()
-        ),
-    )
-    adapter.register_uri(
-        GET,
-        EIA.PRODUCTION_MIX.format("SCEG", "SUN"),
-        json=json.loads(
-            resources.files("electricitymap.contrib.parsers.tests.mocks.EIA")
-            .joinpath("US_SMTH-coal.json")
-            .read_text()
+        EIA.PRODUCTION_MIX.format("SCEG"),
+        json=production_mix_response(
+            "US_NW_AVRN-other.json",
+            {
+                "NUC": "US_CAR_SCEG-nuclear.json",
+                "COL": "US_SMTH-coal.json",
+                "NG": "US_SMTH-coal.json",
+                "WAT": "US_SMTH-coal.json",
+                "OIL": "US_SMTH-coal.json",
+                "SUN": "US_SMTH-coal.json",
+            },
         ),
     )
 
@@ -315,82 +204,35 @@ def test_hydro_transfer_mix(adapter, session, snapshot):
     adapter.register_uri(
         GET,
         ANY,
-        json=json.loads(
-            resources.files("electricitymap.contrib.parsers.tests.mocks.EIA")
-            .joinpath("US_NW_AVRN-other.json")
-            .read_text()
+        json=production_mix_response("US_NW_AVRN-other.json"),
+    )
+    adapter.register_uri(
+        GET,
+        EIA.PRODUCTION_MIX.format("SRP"),
+        json=production_mix_response(
+            "US_NW_AVRN-other.json",
+            {
+                "COL": "US_SMTH-coal.json",
+                "NG": "US_SMTH-coal.json",
+                "NUC": "US_SMTH-coal.json",
+                "SUN": "US_SMTH-coal.json",
+                "WND": "US_SMTH-coal.json",
+                "WAT": "US_SW_SRP-hydro.json",
+            },
         ),
     )
     adapter.register_uri(
         GET,
-        EIA.PRODUCTION_MIX.format("SRP", "COL"),
-        json=json.loads(
-            resources.files("electricitymap.contrib.parsers.tests.mocks.EIA")
-            .joinpath("US_SMTH-coal.json")
-            .read_text()
+        EIA.PRODUCTION_MIX.format("DEAA"),
+        json=production_mix_response(
+            "US_NW_AVRN-other.json", {"WAT": "US_SW_DEAA-hydro.json"}
         ),
     )
     adapter.register_uri(
         GET,
-        EIA.PRODUCTION_MIX.format("SRP", "NG"),
-        json=json.loads(
-            resources.files("electricitymap.contrib.parsers.tests.mocks.EIA")
-            .joinpath("US_SMTH-coal.json")
-            .read_text()
-        ),
-    )
-    adapter.register_uri(
-        GET,
-        EIA.PRODUCTION_MIX.format("SRP", "NUC"),
-        json=json.loads(
-            resources.files("electricitymap.contrib.parsers.tests.mocks.EIA")
-            .joinpath("US_SMTH-coal.json")
-            .read_text()
-        ),
-    )
-    adapter.register_uri(
-        GET,
-        EIA.PRODUCTION_MIX.format("SRP", "SUN"),
-        json=json.loads(
-            resources.files("electricitymap.contrib.parsers.tests.mocks.EIA")
-            .joinpath("US_SMTH-coal.json")
-            .read_text()
-        ),
-    )
-    adapter.register_uri(
-        GET,
-        EIA.PRODUCTION_MIX.format("SRP", "WND"),
-        json=json.loads(
-            resources.files("electricitymap.contrib.parsers.tests.mocks.EIA")
-            .joinpath("US_SMTH-coal.json")
-            .read_text()
-        ),
-    )
-    adapter.register_uri(
-        GET,
-        EIA.PRODUCTION_MIX.format("DEAA", "WAT"),
-        json=json.loads(
-            resources.files("electricitymap.contrib.parsers.tests.mocks.EIA")
-            .joinpath("US_SW_DEAA-hydro.json")
-            .read_text()
-        ),
-    )
-    adapter.register_uri(
-        GET,
-        EIA.PRODUCTION_MIX.format("HGMA", "WAT"),
-        json=json.loads(
-            resources.files("electricitymap.contrib.parsers.tests.mocks.EIA")
-            .joinpath("US_SW_HGMA-hydro.json")
-            .read_text()
-        ),
-    )
-    adapter.register_uri(
-        GET,
-        EIA.PRODUCTION_MIX.format("SRP", "WAT"),
-        json=json.loads(
-            resources.files("electricitymap.contrib.parsers.tests.mocks.EIA")
-            .joinpath("US_SW_SRP-hydro.json")
-            .read_text()
+        EIA.PRODUCTION_MIX.format("HGMA"),
+        json=production_mix_response(
+            "US_NW_AVRN-other.json", {"WAT": "US_SW_HGMA-hydro.json"}
         ),
     )
 
@@ -405,11 +247,7 @@ def test_exchange_transfer(adapter, session):
     #     "2020-01-07T05:00:00+00:00"  # Last datapoint before decommissioning of NSB
     # )
     # 1. Get data directly from EIA for both
-    fpl_exchange_data = json.loads(
-        resources.files("electricitymap.contrib.parsers.tests.mocks.EIA")
-        .joinpath("US-FLA-FPC_US-FLA-FPL_exchange.json")
-        .read_text()
-    )
+    fpl_exchange_data = _load_mock("US-FLA-FPC_US-FLA-FPL_exchange.json")
     adapter.register_uri(
         GET,
         # For example:
@@ -417,11 +255,7 @@ def test_exchange_transfer(adapter, session):
         EIA.EXCHANGE.format(EIA.EXCHANGES[exchange_key]),
         json=fpl_exchange_data,
     )
-    nsb_exchange_data = json.loads(
-        resources.files("electricitymap.contrib.parsers.tests.mocks.EIA")
-        .joinpath("US-FLA-FPC_US-FLA-NSB_exchange.json")
-        .read_text()
-    )
+    nsb_exchange_data = _load_mock("US-FLA-FPC_US-FLA-NSB_exchange.json")
     adapter.register_uri(
         GET,
         # For example:
@@ -450,11 +284,7 @@ def test_fetch_production_mix_discards_null(adapter, session, snapshot):
     adapter.register_uri(
         GET,
         ANY,
-        json=json.loads(
-            resources.files("electricitymap.contrib.parsers.tests.mocks.EIA")
-            .joinpath("US-NW-PGE-with-nulls.json")
-            .read_text()
-        ),
+        json=production_mix_response("US-NW-PGE-with-nulls.json"),
     )
 
     data_list = EIA.fetch_production_mix(ZoneKey("US-NW-PGE"), session)
@@ -470,11 +300,7 @@ def test_fetch_exchange(adapter, session):
     adapter.register_uri(
         GET,
         ANY,
-        json=json.loads(
-            resources.files("electricitymap.contrib.parsers.tests.mocks.EIA")
-            .joinpath("US-NW-BPAT-US-NW-NWMT-exchange.json")
-            .read_text()
-        ),
+        json=_load_mock("US-NW-BPAT-US-NW-NWMT-exchange.json"),
     )
     data_list = EIA.fetch_exchange(
         ZoneKey("US-NW-BPAT"), ZoneKey("US-NW-NWMT"), session
@@ -511,11 +337,7 @@ def test_fetch_consumption(adapter, session):
     adapter.register_uri(
         GET,
         ANY,
-        json=json.loads(
-            resources.files("electricitymap.contrib.parsers.tests.mocks.EIA")
-            .joinpath("US_NW_BPAT-consumption.json")
-            .read_text()
-        ),
+        json=_load_mock("US_NW_BPAT-consumption.json"),
     )
     data_list = EIA.fetch_consumption(ZoneKey("US-NW-BPAT"), session)
     expected = [
@@ -541,11 +363,7 @@ def test_fetch_forecasted_consumption(adapter, session):
     adapter.register_uri(
         GET,
         ANY,
-        json=json.loads(
-            resources.files("electricitymap.contrib.parsers.tests.mocks.EIA")
-            .joinpath("US_NW_BPAT-consumption.json")
-            .read_text()
-        ),
+        json=_load_mock("US_NW_BPAT-consumption.json"),
     )
     data_list = EIA.fetch_consumption_forecast(ZoneKey("US-NW-BPAT"), session)
     expected = [
@@ -572,11 +390,7 @@ def test_fetch_returns_storage(adapter, session, snapshot):
     adapter.register_uri(
         GET,
         ANY,
-        json=json.loads(
-            resources.files("electricitymap.contrib.parsers.tests.mocks.EIA")
-            .joinpath("US_CAL_IID-battery_storage.json")
-            .read_text()
-        ),
+        json=production_mix_response("US_CAL_IID-battery_storage.json"),
     )
 
     data_list = EIA.fetch_production_mix(ZoneKey("US-CAL-IID"), session)
