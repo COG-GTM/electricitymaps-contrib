@@ -503,7 +503,7 @@ def fetch_wind_solar_forecasts(
     end_date = target_datetime + timedelta(days=7)
 
     # Direct iteration method
-    production_list = ProductionBreakdownList(logger)
+    daily_production_lists: list[ProductionBreakdownList] = []
     current_date = target_datetime
     while current_date <= end_date:
         # First try to get the VG Forecast Summary report
@@ -517,11 +517,13 @@ def fetch_wind_solar_forecasts(
             date_, xml = _fetch_xml(logger, session, current_date, ADEQUACY_URL)
             production_list_1 = read_adequacy_report(xml, logger)
 
-        production_list = ProductionBreakdownList.merge_production_breakdowns(
-            [production_list, production_list_1], logger
-        )
+        daily_production_lists.append(production_list_1)
 
         current_date += timedelta(days=1)
+
+    production_list = ProductionBreakdownList.merge_production_breakdowns(
+        daily_production_lists, logger
+    )
     return production_list.to_list()
 
 
