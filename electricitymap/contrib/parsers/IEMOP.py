@@ -1,7 +1,11 @@
 import logging
+from collections.abc import Callable
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta
+from io import BytesIO
 from logging import Logger, getLogger
 from typing import NamedTuple
+from zipfile import ZipFile
 
 import pandas as pd
 from requests import Response, Session
@@ -454,6 +458,8 @@ EXCHANGE_KEY_MAPPING = {
     "VISLUZ1": {"zone_key": "PH-LU->PH-VI", "flow": -1},
 }
 KIND_TO_URL = {"production": DIPC_URL, "exchange": RTDHS_URL}
+# The reports of a day are downloaded concurrently, bounded to stay polite with the server.
+MAX_DOWNLOAD_WORKERS = 8
 KIND_TO_POST_ID = {"production": "5754", "exchange": "5770"}
 STORAGE_METHODS_TO_MODE = {"hydro_storage": "hydro", "battery": "battery"}
 MODES_TO_RESOURCE_KIND = {
@@ -547,22 +553,34 @@ def filter_reports_items(
     return _reports_items
 
 
+def download_reports_items(
+    session: Session,
+    reports_items: list[MarketReportsItem],
+    parse_item: Callable[[Response], pd.DataFrame],
+    logger: Logger,
+) -> list[pd.DataFrame]:
+    """Download the reports concurrently and parse them, keeping the original order."""
+
+    def download_and_parse(reports_item: MarketReportsItem) -> pd.DataFrame:
+        logger.debug(f"Downloading market reports for {reports_item.filename}")
+        return parse_item(session.get(reports_item.link))
+
+    with ThreadPoolExecutor(
+        max_workers=max(1, min(MAX_DOWNLOAD_WORKERS, len(reports_items)))
+    ) as executor:
+        return list(executor.map(download_and_parse, reports_items))
+
+
 def download_production_market_reports_items(
     session: Session, reports_items: list[MarketReportsItem], logger: Logger
 ) -> pd.DataFrame:
-    from io import BytesIO
-    from zipfile import ZipFile
-
     COLUMNS_MAPPING = {
         "REGION_NAME": "zone_key",
         "RESOURCE_NAME": "resource_name",
         "SCHED_MW": "value",
     }
 
-    _all_items_df = []
-    for reports_item in reports_items:
-        logger.debug(f"Downloading market reports for {reports_item.filename}")
-        res: Response = session.get(reports_item.link)
+    def parse_item(res: Response) -> pd.DataFrame:
         _item_dfs = []
         # zip containing a list of csv files which we want to concatenate in a single dataframe
         with ZipFile(BytesIO(res.content)) as zip_file:
@@ -589,7 +607,9 @@ def download_production_market_reports_items(
                         _df = _df.rename(columns=COLUMNS_MAPPING)
                         _item_dfs.append(_df)
 
-        _all_items_df.append(pd.concat(_item_dfs, ignore_index=True))
+        return pd.concat(_item_dfs, ignore_index=True)
+
+    _all_items_df = download_reports_items(session, reports_items, parse_item, logger)
 
     df = pd.concat(_all_items_df, ignore_index=True)
 
@@ -677,10 +697,7 @@ def pivot_per_mode(df: pd.DataFrame) -> pd.DataFrame:
 def download_exchange_market_reports_items(
     session: Session, reports_items: list[MarketReportsItem], logger: Logger
 ) -> pd.DataFrame:
-    _all_items_df = []
-    for reports_item in reports_items:
-        logger.debug(f"Downloading market reports for {reports_item.filename}")
-        r: Response = session.get(reports_item.link)
+    def parse_item(r: Response) -> pd.DataFrame:
         _df = pd.read_csv(r.url)
         _df = _df[:-1]
         _df = convert_column_to_datetime(_df, "RUN_TIME")
@@ -691,8 +708,9 @@ def download_exchange_market_reports_items(
             lambda x: EXCHANGE_KEY_MAPPING[x["HVDC_NAME"]]["flow"] * x["FLOW_FROM"],
             axis=1,
         )
-        _df = _df[["datetime", "zone_key", "net_flow"]]
-        _all_items_df.append(_df)
+        return _df[["datetime", "zone_key", "net_flow"]]
+
+    _all_items_df = download_reports_items(session, reports_items, parse_item, logger)
 
     df = (
         pd.concat(_all_items_df, ignore_index=True)
