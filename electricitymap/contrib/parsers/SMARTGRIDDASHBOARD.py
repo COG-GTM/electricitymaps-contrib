@@ -1,3 +1,4 @@
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta
 from logging import Logger, getLogger
 from operator import itemgetter
@@ -94,6 +95,27 @@ def fetch_data(
     return data
 
 
+def fetch_data_concurrently(
+    target_datetime: datetime,
+    zone_key: ZoneKey,
+    kinds: list[str],
+    session: Session,
+) -> dict[str, list]:
+    """Fetches several independent data kinds in parallel, keyed by kind."""
+    with ThreadPoolExecutor(max_workers=len(kinds)) as executor:
+        futures = {
+            kind: executor.submit(
+                fetch_data,
+                target_datetime=target_datetime,
+                zone_key=zone_key,
+                kind=kind,
+                session=session,
+            )
+            for kind in kinds
+        }
+    return {kind: future.result() for kind, future in futures.items()}
+
+
 def parse_consumption(
     zone_key: ZoneKey,
     session: Session | None,
@@ -148,23 +170,15 @@ def fetch_production(
     if target_datetime is None:
         target_datetime = datetime.now(tz=IE_TZ)
 
-    total_generation = fetch_data(
+    data = fetch_data_concurrently(
         target_datetime=target_datetime,
         zone_key=zone_key,
-        kind="generation",
+        kinds=["generation", "wind", "solar"],
         session=session,
     )
-
-    wind_data = fetch_data(
-        target_datetime=target_datetime, zone_key=zone_key, kind="wind", session=session
-    )
-
-    solar_data = fetch_data(
-        target_datetime=target_datetime,
-        zone_key=zone_key,
-        kind="solar",
-        session=session,
-    )
+    total_generation = data["generation"]
+    wind_data = data["wind"]
+    solar_data = data["solar"]
 
     assert len(total_generation) > 0
     assert len(wind_data) > 0
@@ -326,12 +340,14 @@ def fetch_wind_solar_forecasts(
     if target_datetime is None:
         target_datetime = datetime.now(tz=IE_TZ)
 
-    wind_forecast_data = fetch_data(
+    data = fetch_data_concurrently(
         target_datetime=target_datetime,
         zone_key=zone_key,
-        kind="wind_forecast",
+        kinds=["wind_forecast", "solar_forecast"],
         session=session,
     )
+    wind_forecast_data = data["wind_forecast"]
+    solar_forecast_data = data["solar_forecast"]
 
     wind_forecast = ProductionBreakdownList(logger=logger)
     for item in wind_forecast_data:
@@ -344,13 +360,6 @@ def fetch_wind_solar_forecasts(
             source=SOURCE,
             sourceType=EventSourceType.forecasted,
         )
-
-    solar_forecast_data = fetch_data(
-        target_datetime=target_datetime,
-        zone_key=zone_key,
-        kind="solar_forecast",
-        session=session,
-    )
 
     solar_forecast = ProductionBreakdownList(logger=logger)
     for item in solar_forecast_data:
