@@ -1,4 +1,5 @@
 import json
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta, timezone
 from itertools import groupby
 from logging import Logger, getLogger
@@ -20,6 +21,8 @@ TWO_HR_LIMIT = 2 * 4 * 12
 ELIA_WINDOW_HOURS = (
     2  # Elia API max window per call (96 items = 2h * 4 intervals * 12 modes)
 )
+
+ELIA_MAX_CONCURRENT_REQUESTS = 8
 
 ELIA_API_ENDPOINT = "https://opendata.elia.be/api/explore/v2.1"
 DATASET_ID_ELIA = "ods201"
@@ -144,16 +147,25 @@ def fetch_production(
     elia_data = ProductionBreakdownList(logger)
 
     if entsoe_datetimes:
-        range_start = min(entsoe_datetimes)
         range_end = max(entsoe_datetimes)
-        chunk_start = range_start
+        windows: list[tuple[datetime, datetime]] = []
+        chunk_start = min(entsoe_datetimes)
         while chunk_start <= range_end:
             chunk_end = chunk_start + timedelta(hours=ELIA_WINDOW_HOURS)
-            chunk = fetch_elia(zone_key, session, chunk_start, chunk_end, logger)
-            elia_data = ProductionBreakdownList.update_production_breakdowns(
-                elia_data, chunk, logger
-            )
+            windows.append((chunk_start, chunk_end))
             chunk_start = chunk_end
+
+        with ThreadPoolExecutor(
+            max_workers=min(ELIA_MAX_CONCURRENT_REQUESTS, len(windows))
+        ) as executor:
+            chunks = executor.map(
+                lambda window: fetch_elia(zone_key, session, *window, logger),
+                windows,
+            )
+            for chunk in chunks:
+                elia_data = ProductionBreakdownList.update_production_breakdowns(
+                    elia_data, chunk, logger
+                )
 
     # Prefer Elia data where available; fall back to ENTSOE for other datetimes.
     return ProductionBreakdownList.update_production_breakdowns(
