@@ -1,3 +1,4 @@
+from concurrent.futures import ThreadPoolExecutor
 from csv import reader
 from datetime import datetime, timedelta
 from logging import Logger, getLogger
@@ -41,6 +42,22 @@ EXCHANGE_DIRECTION_MAP = {
     "HN->SV": 1,
 }
 
+MAX_CONCURRENT_REQUESTS = 4
+
+
+def get_data_for_index(session: Session, index: int) -> str:
+    """Gets the raw CSV data from otr.ods.org.hn for a single p8_indx."""
+    params = {
+        "request": "CSV_N_",
+        "p8_indx": index,
+    }
+    response: Response = session.get(
+        DATA_URL,
+        params=params,
+        verify=False,
+    )
+    return response.text
+
 
 def get_production_data_by_type(
     session: Session,
@@ -50,22 +67,15 @@ def get_production_data_by_type(
     Returns a list of tuples containing (CSV_data, plant_to_type_mapping) for each type.
     """
     data_by_type = []
+    indexes = [index for index in range(1, 11) if index != 7]
 
-    for index in range(1, 11):
-        if index == 7:
-            continue
-
-        params = {
-            "request": "CSV_N_",
-            "p8_indx": index,
-        }
-        response: Response = session.get(
-            DATA_URL,
-            params=params,
-            verify=False,
+    with ThreadPoolExecutor(max_workers=MAX_CONCURRENT_REQUESTS) as executor:
+        responses = list(
+            executor.map(lambda index: get_data_for_index(session, index), indexes)
         )
 
-        parsed_csv = list(reader(response.text.splitlines()))
+    for index, response_text in zip(indexes, responses, strict=True):
+        parsed_csv = list(reader(response_text.splitlines()))
         csv_data = []
         plant_to_type_map = {}
 
@@ -86,12 +96,7 @@ def get_exchange_data(session: Session) -> tuple[list[Any], dict[str, str]]:
     Gets the exchange data from otr.ods.org.hn.
     Returns a tuple with CSV data and exchange mapping.
     """
-    params = {
-        "request": "CSV_N_",
-        "p8_indx": 7,
-    }
-    response: Response = session.get(DATA_URL, params=params, verify=False)
-    CSV_data = list(reader(response.text.splitlines()))
+    CSV_data = list(reader(get_data_for_index(session, 7).splitlines()))
     return CSV_data, EXCHANGE_MAP
 
 
