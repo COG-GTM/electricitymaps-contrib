@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from collections.abc import Sequence
+from collections.abc import Iterator, Sequence
 from datetime import datetime
 from logging import Logger
 from operator import itemgetter
@@ -160,6 +160,19 @@ class AggregatableEventList(EventList[EventType], ABC, Generic[EventType]):
             )
         return source_types[0]
 
+    @staticmethod
+    def _iter_summed_values(
+        summed_events: pd.DataFrame, column: str
+    ) -> Iterator[tuple[datetime, Any]]:
+        """
+        Iterates over the datetimes and values of a dataframe grouped by datetime,
+        without boxing each row into a Series.
+        """
+        for dt, value in zip(
+            summed_events.index, summed_events[column].to_numpy(), strict=True
+        ):
+            yield dt.to_pydatetime(), value
+
 
 class ExchangeList(AggregatableEventList[Exchange]):
     def append(
@@ -202,10 +215,8 @@ class ExchangeList(AggregatableEventList[Exchange]):
         exchange_df = exchange_df.groupby(level="datetime", dropna=False).sum(
             numeric_only=True,
         )
-        for dt, row in exchange_df.iterrows():
-            exchanges.append(
-                zone_key, dt.to_pydatetime(), sources, row["netFlow"], source_type
-            )  # type: ignore
+        for dt, net_flow in ExchangeList._iter_summed_values(exchange_df, "netFlow"):
+            exchanges.append(zone_key, dt, sources, net_flow, source_type)
 
         return exchanges
 
@@ -429,10 +440,10 @@ class TotalProductionList(AggregatableEventList[TotalProduction]):
         production_df = production_df.groupby(level="datetime", dropna=False).sum(
             numeric_only=True
         )
-        for dt, row in production_df.iterrows():
-            production_list.append(
-                zone_key, dt.to_pydatetime(), sources, row["value"], source_type
-            )  # type: ignore
+        for dt, value in TotalProductionList._iter_summed_values(
+            production_df, "value"
+        ):
+            production_list.append(zone_key, dt, sources, value, source_type)
 
         return production_list
 
@@ -483,10 +494,10 @@ class TotalConsumptionList(AggregatableEventList[TotalConsumption]):
         consumption_df = consumption_df.groupby(level="datetime", dropna=False).sum(
             numeric_only=True
         )
-        for dt, row in consumption_df.iterrows():
-            consumption_list.append(
-                zone_key, dt.to_pydatetime(), sources, row["consumption"], source_type
-            )  # type: ignore
+        for dt, consumption in TotalConsumptionList._iter_summed_values(
+            consumption_df, "consumption"
+        ):
+            consumption_list.append(zone_key, dt, sources, consumption, source_type)
 
         return consumption_list
 
