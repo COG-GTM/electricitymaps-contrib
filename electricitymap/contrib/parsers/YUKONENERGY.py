@@ -123,12 +123,9 @@ def fetch_production(
         )
         all_production_breakdowns.append(production_mode_list)
 
-        production_events = ProductionBreakdownList.merge_production_breakdowns(
-            all_production_breakdowns, logger
-        )
-        production_events = production_events.to_list()
-
-    return production_events
+    return ProductionBreakdownList.merge_production_breakdowns(
+        all_production_breakdowns, logger
+    ).to_list()
 
 
 if __name__ == "__main__":
