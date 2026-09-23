@@ -83,19 +83,17 @@ def fetch_production(
 
     production_breakdown_list = ProductionBreakdownList(logger)
 
-    for idx in response_df.index.unique():
+    for idx, group in response_df.groupby(level=0, sort=False):
         production_mix = ProductionMix()
         time = datetime.strptime(idx, "%Y-%m-%d %H:%M:%S").replace(tzinfo=TIMEZONE)
 
-        for _, item in response_df.loc[idx].iterrows():
-            production_type = item.get("tipo")
+        for production_type, value in zip(group["tipo"], group["valor"], strict=True):
             production_mode = PRODUCTION_TYPE_TO_PRODUCTION_MODE.get(production_type)
 
             if production_mode is None:
                 continue
 
-            value = float(item.get("valor"))
-            production_mix.add_value(production_mode, value)
+            production_mix.add_value(production_mode, float(value))
 
         production_breakdown_list.append(
             zoneKey=zone_key,
