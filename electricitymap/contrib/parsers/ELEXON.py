@@ -357,11 +357,15 @@ def query_production_fuelhh(
 
 
 def query_and_merge_production_fuelhh_and_eso(
-    session: Session, target_datetime: datetime, logger: Logger
+    session: Session,
+    target_datetime: datetime,
+    logger: Logger,
+    events_eso: list[dict[str, Any]] | None = None,
 ) -> ProductionBreakdownList:
     events_fuelhh = query_production_fuelhh(session, target_datetime, logger)
     parsed_events_fuelhh = parse_production(events_fuelhh, logger, "FUELHH")
-    events_eso = query_additional_eso_data(target_datetime, session)
+    if events_eso is None:
+        events_eso = query_additional_eso_data(target_datetime, session)
     parsed_events_eso = parse_eso_production(events_eso, logger)
 
     merged_events = ProductionBreakdownList.merge_production_breakdowns(
@@ -527,8 +531,10 @@ def fetch_production(
             message=f"Production data is not available before {ELEXON_START_DATE.date()}",
         )
 
-    data = query_and_merge_production_fuelhh_and_eso(session, target_datetime, logger)
     eso_data = query_additional_eso_data(target_datetime, session)
+    data = query_and_merge_production_fuelhh_and_eso(
+        session, target_datetime, logger, events_eso=eso_data
+    )
     parsed_hydro_storage_data = parse_eso_hydro_storage(eso_data, logger)
 
     return ProductionBreakdownList.merge_production_breakdowns(
