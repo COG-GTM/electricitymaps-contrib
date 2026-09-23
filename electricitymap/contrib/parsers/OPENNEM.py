@@ -270,22 +270,14 @@ def process_production_datasets(
     # OPENNEM sometimes only report solar for the latest data, remove the datapoint if it only has solar
     # TODO: Remove this once the race condition between feeder-electricity and quality validation is fixed
     corrected_breakdown = ProductionBreakdownList(logger=logger)
-    for event in merged_production:
-        for mode, value in event.production.__dict__.items():
-            if mode != "solar" and value is not None:
-                dt = event.datetime
-                production = event.production
-                storage = event.storage
-                source = event.source
-                zoneKey = event.zoneKey
-                corrected_breakdown.append(
-                    zoneKey=zoneKey,
-                    datetime=dt,
-                    production=production,
-                    storage=storage,
-                    source=source,
-                )
-                break
+    corrected_breakdown.events = [
+        event
+        for event in merged_production
+        if any(
+            mode != "solar" and value is not None
+            for mode, value in event.production.__dict__.items()
+        )
+    ]
     merged_production = corrected_breakdown
     return merged_production
 
