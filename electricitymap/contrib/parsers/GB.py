@@ -13,6 +13,7 @@ import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta, timezone
 from io import BytesIO
 from logging import Logger, getLogger
+from math import ceil
 from zoneinfo import ZoneInfo
 
 import pandas as pd
@@ -459,8 +460,19 @@ def _compute_storage_for_units(
             f"pre-fetched: {total_boalf} BOALF, {total_pn} PN rows"
         )
 
+    # Units without any record in this period contribute exactly 0 MW, so they
+    # can be skipped entirely instead of running the per-minute loop on them.
+    units_with_records = (
+        pn_by_unit.keys()
+        | mels_by_unit.keys()
+        | mils_by_unit.keys()
+        | boalf_by_unit.keys()
+    )
+
     total_storage = 0.0
     for unit in units:
+        if unit not in units_with_records:
+            continue
         if print_details:
             n_boalf = len(boalf_by_unit.get(unit, []))
             n_pn = len(pn_by_unit.get(unit, []))
@@ -489,10 +501,23 @@ def _extract_data_rows(payload: dict | list) -> list[dict]:
     return payload if isinstance(payload, list) else []
 
 
-def _get_boalf_value_at_minute(
-    records: list[dict], minute_dt: datetime
-) -> float | None:
-    """Determine the BOALF MW level for a single unit at a specific minute.
+def _minute_index_range(
+    record: dict, period_start: datetime, period_minutes: int
+) -> tuple[int, int]:
+    """Minute indices within the period covered by a record's [timeFrom, timeTo).
+
+    Returns a half-open [start, end) range of indices m for which
+    ``time_from <= period_start + m minutes < time_to``.
+    """
+    start = ceil((record["time_from"] - period_start).total_seconds() / 60)
+    end = ceil((record["time_to"] - period_start).total_seconds() / 60)
+    return max(start, 0), min(end, period_minutes)
+
+
+def _boalf_values_by_minute(
+    records: list[dict], period_start: datetime, period_minutes: int
+) -> list[float | None]:
+    """Resolve the BOALF MW level for a single unit for every minute of a period.
 
     BOALF (Bid-Offer Acceptance Level Flagged) records represent instructions
     from the System Operator to a generation/storage unit. Multiple BOALF
@@ -500,56 +525,62 @@ def _get_boalf_value_at_minute(
     A higher acceptanceNumber represents a more recent instruction that
     supersedes earlier ones.
 
-    Algorithm:
-      1. Find all BOALF records whose [timeFrom, timeTo) interval covers
-         the minute.
-      2. Among those, pick the record with the highest acceptanceNumber.
-      3. Return its levelFrom (the MW level at the start of the interval).
+    Algorithm: for each record, expand its [timeFrom, timeTo) interval onto the
+    minutes of the period it covers, keeping the levelFrom of the record with
+    the highest acceptanceNumber for each minute.
 
     We use levelFrom rather than interpolating between levelFrom and levelTo.
     In practice, "body" records (spanning many minutes) have
     levelFrom == levelTo, and "ramp" records are only 1 minute long, so
     the error from not interpolating is negligible.
 
-    Returns None if no BOALF record covers this minute, signalling the
-    caller to fall back to PN data.
+    Minutes not covered by any BOALF record are None, signalling the caller to
+    fall back to PN data.
     """
-    best_acceptance = -1
-    best_value: float | None = None
+    values: list[float | None] = [None] * period_minutes
+    best_acceptance = [-1] * period_minutes
 
     for rec in records:
-        if rec["time_from"] <= minute_dt < rec["time_to"]:
-            acceptance = rec["acceptance_number"]
-            if acceptance > best_acceptance:
-                level = rec["level_from"]
-                if level is not None:
-                    best_acceptance = acceptance
-                    best_value = level
+        level = rec["level_from"]
+        if level is None:
+            continue
+        acceptance = rec["acceptance_number"]
+        start, end = _minute_index_range(rec, period_start, period_minutes)
+        for m in range(start, end):
+            if acceptance > best_acceptance[m]:
+                best_acceptance[m] = acceptance
+                values[m] = level
 
-    return best_value
+    return values
 
 
-def _get_level_at_minute(records: list[dict], minute_dt: datetime) -> float | None:
-    """Determine the MW level from a PN/MELS/MILS dataset at a specific minute.
+def _levels_by_minute(
+    records: list[dict], period_start: datetime, period_minutes: int
+) -> list[float | None]:
+    """Resolve the MW level from a PN/MELS/MILS dataset for every minute of a period.
 
     Physical Notification (PN), Maximum Export Limit (MELS), and Minimum
     Import Limit (MILS) datasets share the same record structure with
     timeFrom/timeTo and levelFrom/levelTo fields. Their intervals typically
     align to settlement period boundaries but are not guaranteed to.
 
-    For a given minute, finds all records whose [timeFrom, timeTo) interval
-    covers it and returns the levelFrom of the one with the latest timeFrom,
-    making the result deterministic when overlapping records exist.
-
-    Returns None if no record covers this minute.
+    For each minute the levelFrom of the covering record with the latest
+    timeFrom is used, making the result deterministic when overlapping records
+    exist. Minutes not covered by any record are None.
     """
-    best_rec = None
+    values: list[float | None] = [None] * period_minutes
+    best_time_from: list[datetime | None] = [None] * period_minutes
+
     for rec in records:
-        if rec["time_from"] <= minute_dt < rec["time_to"] and (
-            best_rec is None or rec["time_from"] > best_rec["time_from"]
-        ):
-            best_rec = rec
-    return best_rec["level_from"] if best_rec is not None else None
+        time_from = rec["time_from"]
+        start, end = _minute_index_range(rec, period_start, period_minutes)
+        for m in range(start, end):
+            current = best_time_from[m]
+            if current is None or time_from > current:
+                best_time_from[m] = time_from
+                values[m] = rec["level_from"]
+
+    return values
 
 
 def _compute_unit_storage_mw(
@@ -585,32 +616,38 @@ def _compute_unit_storage_mw(
     zero_minutes = 0
     minute_details: list[str] = []
 
-    for m in range(period_minutes):
-        minute_dt = period_start + timedelta(minutes=m)
-        ts = minute_dt.strftime("%H:%M")
+    boalf_values = _boalf_values_by_minute(boalf_records, period_start, period_minutes)
+    pn_values = _levels_by_minute(pn_records, period_start, period_minutes)
+    mels_values = _levels_by_minute(mels_records, period_start, period_minutes)
+    mils_values = _levels_by_minute(mils_records, period_start, period_minutes)
 
-        boalf_value = _get_boalf_value_at_minute(boalf_records, minute_dt)
-        pn_value = _get_level_at_minute(pn_records, minute_dt)
-        mels_value = _get_level_at_minute(mels_records, minute_dt)
-        mils_value = _get_level_at_minute(mils_records, minute_dt)
+    for m in range(period_minutes):
+        boalf_value = boalf_values[m]
+        pn_value = pn_values[m]
 
         if boalf_value is not None:
             total += boalf_value
             boalf_minutes += 1
-            if boalf_value != 0 or (pn_value is not None and pn_value != 0):
+            if print_minute_details and (
+                boalf_value != 0 or (pn_value is not None and pn_value != 0)
+            ):
+                ts = (period_start + timedelta(minutes=m)).strftime("%H:%M")
                 pn_str = f"|PN:{pn_value:.0f}" if pn_value is not None else ""
                 minute_details.append(f"{ts}=BOALF:{boalf_value:.0f}{pn_str}")
             continue
 
         if pn_value is not None:
             clamped = pn_value
+            mels_value = mels_values[m]
             if mels_value is not None:
                 clamped = min(clamped, mels_value)
+            mils_value = mils_values[m]
             if mils_value is not None:
                 clamped = max(clamped, mils_value)
             total += clamped
             pn_minutes += 1
-            if clamped != 0:
+            if print_minute_details and clamped != 0:
+                ts = (period_start + timedelta(minutes=m)).strftime("%H:%M")
                 extra = ""
                 if clamped != pn_value:
                     extra = f"(raw:{pn_value:.0f})"
