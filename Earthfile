@@ -1,5 +1,5 @@
 VERSION 0.8
-FROM astral/uv:python3.10-bookworm-slim
+FROM astral/uv:python3.14-bookworm-slim
 WORKDIR /contrib
 
 linting-files:

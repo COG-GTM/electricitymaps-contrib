@@ -75,7 +75,7 @@ def get_image_text(img_url, lang, width=None):
     img = img.crop((0, int(height / 8), width, height))
     # cropping the image, makes it easier to read for tesseract
     text = image_to_string(img, lang=lang)
-    return text
+    return text.strip()
 
 
 def extract_capacity(tr):

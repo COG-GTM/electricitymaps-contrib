@@ -3,7 +3,7 @@ name = "electricitymap-contrib-types"
 version = "1.1.1"
 description = "Type definitions for Electricity Maps"
 authors = [{ name = "Electricity Maps", email = "app@electricitymaps.com" }]
-requires-python = ">= 3.10, < 3.14"
+requires-python = ">= 3.10, < 3.15"
 license = "AGPL-3.0-or-later"
 dependencies = [
     "pydantic>=1.10.17,<2",
