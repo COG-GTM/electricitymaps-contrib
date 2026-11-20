@@ -1,0 +1,81 @@
+// Architecture of COG-GTM/electricitymaps-contrib (default branch: master).
+// Edit this file, then run docs/diagrams/render.sh to refresh the PNG and SVG.
+digraph electricitymaps_contrib {
+  graph [rankdir=TB, fontname="DejaVu Sans", fontsize=18, labelloc=t, nodesep=0.35, ranksep=0.55, pad=0.3,
+         label="electricitymaps-contrib — architecture (master)"];
+  node  [shape=box, style="rounded,filled", fontname="DejaVu Sans", fontsize=15, fillcolor=white, color="#455a64"];
+  edge  [fontname="DejaVu Sans", fontsize=12, color="#546e7a"];
+
+  sources [label="Public data sources\nTSOs, ENTSO-E, EIA, governments\n(HTTP APIs, CSV, HTML, images)", shape=cylinder, fillcolor="#fff3e0"];
+
+  subgraph cluster_config {
+    label="Static configuration (config/, geo/)"; style="rounded,filled"; fillcolor="#e8f5e9"; color="#66bb6a";
+    zones_yaml [label="config/zones/*.yaml\n379 zones: capacity, parsers,\nemission factors, fallback mixes"];
+    exch_yaml  [label="config/exchanges/*.yaml\n381 exchanges: lonlat,\nrotation, parsers"];
+    other_cfg  [label="defaults.yaml · retired_zones/ (58)\ndata_centers.json · zone_names.json"];
+    geo        [label="geo/world.geojson\n+ generate-zone-geo.ts (Bun)"];
+    {rank=same; zones_yaml; exch_yaml;}
+    {rank=same; other_cfg; geo;}
+  }
+
+  subgraph cluster_pkg {
+    label="Python package electricitymap.contrib"; style="rounded,filled"; fillcolor="#e3f2fd"; color="#42a5f5";
+    cfg_mod   [label="config/\nreading.py · model.py (Pydantic)\nZONES_CONFIG · EXCHANGES_CONFIG\nCO2EQ_PARAMETERS · neighbours"];
+    registry  [label="parsers/lib/parsers.py\nPARSER_DATA_TYPE_TO_DICT\n(23 data types → functions)"];
+    parsers   [label="parsers/*.py (105 modules)\nfetch_production, fetch_exchange,\nfetch_price, forecasts …"];
+    cap_parsers [label="capacity_parsers/*.py (15)\nENTSOE, EIA, EMBER, IRENA …"];
+    parser_lib [label="parsers/lib/\nsession · web · config decorators\nquality / validation · exceptions"];
+    models    [label="lib/models/\nevents.py · event_lists.py\nProductionBreakdown, Exchange,\nPrice … (Pydantic v1)"];
+    {rank=same; registry; parser_lib;}
+    {rank=same; parsers; cap_parsers;}
+  }
+
+  types [label="libs/types (workspace package)\nelectricitymap.contrib.types\nParserDataType · ZoneKey", fillcolor="#ede7f6"];
+
+  subgraph cluster_tools {
+    label="Developer tools and CI"; style="rounded,filled"; fillcolor="#fffde7"; color="#fbc02d";
+    test_parser [label="test_parser.py\nuv run test_parser ZONE [type]"];
+    cap_update  [label="capacity_update.py +\nscripts/update_capacity_configuration.py"];
+    ci          [label="GitHub Actions CI.yml\nprettier · ruff · pytest 3.10–3.12\nEarthly +test-all · links · CodeQL"];
+    {rank=same; test_parser; cap_update; ci;}
+  }
+
+  subgraph cluster_web {
+    label="web/ (COG-GTM addition: data scripts + plan, no app on master)"; style="rounded,filled,dashed"; fillcolor="#fce4ec"; color="#ec407a";
+    gen_web   [label="scripts/generate_web_data.py\n→ web/public/zones.json,\nexchanges.json, world.geojson"];
+    capture   [label="scripts/capture_grid_data.py\nPlaywright over Chrome CDP :29229"];
+    grid_data [label="web/data/\ngrid_state_2026-05-03.json", shape=note, fillcolor="#fff8e1"];
+    gen_real  [label="scripts/generate_real_data.py\n→ web/public/mock-data.json"];
+    plan      [label="FRONTEND_PLAN.md\nplanned Vite + React + MapLibre app\n(web/src not on master)", style="rounded,dashed,filled", fillcolor="#fafafa"];
+    {rank=same; gen_web; capture;}
+  }
+
+  em_app    [label="app.electricitymaps.com\n/api/grid-state-page", shape=component, fillcolor="#fff3e0"];
+  platform  [label="Electricity Maps platform (not in repo)\nschedules parsers, flow-tracing,\nestimation, API, app", shape=component, fillcolor="#eceff1"];
+
+  zones_yaml -> cfg_mod; exch_yaml -> cfg_mod; other_cfg -> cfg_mod;
+  zones_yaml -> geo [label="bounding_box,\ncenter_point", style=dashed, dir=back];
+  exch_yaml -> other_cfg [style=invis];
+  cfg_mod -> registry [label="parsers: keys"];
+  registry -> parsers; registry -> cap_parsers;
+  parser_lib -> parsers [style=dashed, arrowhead=none];
+  sources -> parsers [label="HTTP (requests)"];
+  sources -> cap_parsers;
+  parsers -> models [label="build EventLists"];
+  models -> cfg_mod [label="validate zoneKey", style=dashed];
+  types -> registry [style=dashed]; types -> models [style=dashed];
+
+  registry -> test_parser [label="look up\nzone + type"];
+  cap_parsers -> cap_update;
+  cap_update -> zones_yaml [label="writes capacity", style=dashed, constraint=false];
+  models -> platform [label="to_list() dicts"];
+  cfg_mod -> platform [label="published wheel\n(electricitymap + config)"];
+
+  zones_yaml -> gen_web; exch_yaml -> gen_web; geo -> gen_web;
+  em_app -> capture [label="intercepted JSON"];
+  capture -> grid_data; grid_data -> gen_real; gen_web -> gen_real [label="zones.json"];
+  zones_yaml -> gen_real [label="capacity"];
+  test_parser -> gen_web [style=invis, weight=5];
+  ci -> capture [style=invis, weight=5];
+  gen_real -> plan [label="static inputs", style=dashed];
+}

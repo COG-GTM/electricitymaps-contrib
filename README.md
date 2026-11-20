@@ -37,6 +37,10 @@ We fetch the raw data from public, free, and official sources. They include offi
 
 _View it online [app.electricitymaps.com](https://app.electricitymaps.com), or download the app on [Google Play](https://play.google.com/store/apps/details?id=com.tmrow.electricitymap&utm_source=github) or the [App store](https://itunes.apple.com/us/app/electricity-map/id1224594248&utm_source=github)._
 
+## Architecture
+
+See [docs/architecture.md](docs/architecture.md) for how the configuration, parsers, data models, tooling and the `web/` data scripts fit together, with a Graphviz diagram ([source](docs/diagrams/architecture.dot), [PNG](docs/diagrams/architecture.png), [SVG](docs/diagrams/architecture.svg)).
+
 ## Contributing
 
 Electricity Maps collection of parsers is a community project and we welcome contributions from anyone!
